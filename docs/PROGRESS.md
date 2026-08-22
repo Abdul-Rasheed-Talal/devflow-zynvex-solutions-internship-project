@@ -4,7 +4,7 @@
 Module 1 — Application Foundation & Authentication
 
 ## Status
-Application foundation initialized. Authentication not yet implemented.
+Application foundation initialized. User model implemented. Authentication endpoints not yet implemented.
 
 ## Completed
 - Project scope documented.
@@ -32,17 +32,26 @@ Application foundation initialized. Authentication not yet implemented.
 - API client utility created (lib/apiClient.js).
 - .env.example updated with NODE_ENV.
 - /api/auth/me vs /api/users/me responsibility clarified in API_SPEC.md.
+- User model implemented (models/User.js).
+- Schema validation: name (required, 2–100 chars), email (required, unique, normalized to lowercase, regex-validated), passwordHash (required, select:false).
+- Email uniqueness enforced via Mongoose unique index.
+- Email normalization via lowercase:true.
+- passwordHash excluded from default queries (select:false) and excluded from toJSON()/toSafeObject().
+- Mongoose timestamps enabled (createdAt, updatedAt).
 
 ## Next
-1. Verify backend starts and health endpoint responds.
-2. Verify frontend dev server starts and builds successfully.
-3. Implement authentication (registration, login, logout, JWT, bcrypt, User model, protected routes).
+1. Implement registration endpoint (POST /api/auth/register) with bcrypt password hashing.
+2. Implement login endpoint (POST /api/auth/login) with JWT.
+3. Implement auth middleware, logout, GET /api/auth/me.
+4. Implement protected routes and frontend authentication UI.
 
 ## Known issues
-None yet.
+None.
 
 ## Decision log
 - Used Node.js built-in --watch flag for backend dev script instead of adding nodemon dependency (Node v22 supports --watch natively).
 - Used Tailwind CSS v4 with @tailwindcss/vite plugin (CSS-first configuration, no tailwind.config.js needed).
 - Removed TypeScript type packages (@types/react, @types/react-dom) from frontend since project uses JavaScript.
 - /api/auth/me serves authentication verification; /api/users/me serves profile management. Both require auth but serve different concerns.
+- passwordHash field uses select:false in Mongoose schema, plus toJSON() override as a safety net — double protection against accidental exposure.
+- Did not add avatar field to User model; DATABASE_SCHEMA.md marks it as "optional, only if needed" and it is not needed for Module 1 auth.
