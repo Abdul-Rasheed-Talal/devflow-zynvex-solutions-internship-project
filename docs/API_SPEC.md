@@ -10,11 +10,24 @@ POST /api/auth/login
 POST /api/auth/logout
 GET  /api/auth/me
 
-### User
+### User profile
 GET /api/users/me
 PUT /api/users/me
 
-Exact request/response schemas should be documented here when implemented.
+### Endpoint responsibility
+
+**GET /api/auth/me** — Returns the currently authenticated user's identity based on the active session/token. Used by the frontend to verify whether the user is still authenticated and to bootstrap the auth state on page load. Returns minimal identity information (id, name, email).
+
+**GET /api/users/me** — Returns the authenticated user's full profile data for display and editing.
+
+**PUT /api/users/me** — Updates the authenticated user's profile information.
+
+The `/auth/me` endpoint is an authentication concern. The `/users/me` endpoints are profile-management concerns. Both require authentication but serve different purposes.
+
+### Health
+GET /api/health
+
+Returns a simple JSON response confirming the API is running. No authentication required.
 
 ## API rules
 - JSON request/response.
