@@ -5,7 +5,18 @@ The API contract should be kept stable and documented as endpoints are implement
 ## Module 1 target
 
 ### Authentication
-POST /api/auth/register
+**POST /api/auth/register**
+- **Purpose**: Create a new user account securely.
+- **Request Body**: JSON object containing `name`, `email`, and `password`.
+- **Response (Success)**: `201 Created`. Returns safe user information (`id`, `name`, `email`, `createdAt`). Does not return `passwordHash`.
+- **Validation/Error Behavior**: 
+  - Validates presence of `name`, `email`, and `password`.
+  - Enforces password minimum length of 6 characters.
+  - Normalizes email to lowercase and trims whitespace.
+  - Returns `400 Bad Request` for validation failures.
+  - Returns `409 Conflict` if the email is already registered.
+- **Security**: Hashes the password using `bcrypt` (salt rounds: 10) before saving to the database. Plaintext passwords are not logged or stored.
+
 POST /api/auth/login
 POST /api/auth/logout
 GET  /api/auth/me

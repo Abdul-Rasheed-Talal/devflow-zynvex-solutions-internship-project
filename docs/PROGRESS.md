@@ -4,7 +4,7 @@
 Module 1 — Application Foundation & Authentication
 
 ## Status
-Application foundation initialized. User model implemented. Authentication endpoints not yet implemented.
+Application foundation initialized. User model implemented. Registration API implemented. Login and other auth endpoints not yet implemented.
 
 ## Completed
 - Project scope documented.
@@ -38,12 +38,16 @@ Application foundation initialized. User model implemented. Authentication endpo
 - Email normalization via lowercase:true.
 - passwordHash excluded from default queries (select:false) and excluded from toJSON()/toSafeObject().
 - Mongoose timestamps enabled (createdAt, updatedAt).
+- Registration endpoint implemented (POST /api/auth/register).
+- Password hashing implemented using bcrypt (salt rounds 10).
+- Duplicate email handling implemented safely (returns 409 Conflict).
+- Input validation implemented for registration (400 Bad Request).
+- Verification performed for missing fields, invalid fields, successful registration, and duplicate registration.
 
 ## Next
-1. Implement registration endpoint (POST /api/auth/register) with bcrypt password hashing.
-2. Implement login endpoint (POST /api/auth/login) with JWT.
-3. Implement auth middleware, logout, GET /api/auth/me.
-4. Implement protected routes and frontend authentication UI.
+1. Implement login endpoint (POST /api/auth/login) with JWT.
+2. Implement auth middleware, logout, GET /api/auth/me.
+3. Implement protected routes and frontend authentication UI.
 
 ## Known issues
 None.
