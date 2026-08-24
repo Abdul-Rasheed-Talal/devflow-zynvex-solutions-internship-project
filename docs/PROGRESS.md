@@ -4,7 +4,7 @@
 Module 1 — Application Foundation & Authentication
 
 ## Status
-Application foundation initialized. User model and auth APIs implemented. Auth middleware not yet implemented.
+Application foundation initialized. User model, auth APIs, and JWT middleware implemented.
 
 ## Completed
 - Project scope documented.
@@ -48,9 +48,13 @@ Application foundation initialized. User model and auth APIs implemented. Auth m
 - Password verification implemented using bcrypt.compare.
 - Invalid credential handling implemented securely (generic 401 error).
 - Environment configuration updated to strictly require JWT_SECRET.
+- JWT authentication middleware implemented (`requireAuth`).
+- Bearer token verification implemented.
+- Invalid/expired token handling verified.
+- `req.user` identity established safely (avoids full DB fetch).
 
 ## Next
-1. Implement auth middleware, logout, GET /api/auth/me.
+1. Implement GET /api/auth/me and POST /api/auth/logout.
 2. Implement protected routes and frontend authentication UI.
 
 ## Known issues

@@ -31,6 +31,15 @@ The API contract should be kept stable and documented as endpoints are implement
   - Token expires in 1 day (`1d`).
 - **Security**: Verifies the password against the stored bcrypt hash using `bcrypt.compare`. The token is cryptographically signed using `JWT_SECRET` from the environment.
 
+### Protected Endpoints
+Protected endpoints require an `Authorization` header with a valid JWT using the `Bearer` scheme:
+
+`Authorization: Bearer <JWT>`
+
+- **Missing/Malformed Token**: Returns `401 Unauthorized` ("Authentication required").
+- **Invalid/Expired Token**: Returns `401 Unauthorized` ("Invalid or expired token").
+- **Authenticated Request**: The server verifies the token signature and expiration, extracts the identity (`id`), and processes the request.
+
 POST /api/auth/logout
 GET  /api/auth/me
 
