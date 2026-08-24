@@ -52,9 +52,14 @@ Application foundation initialized. User model, auth APIs, and JWT middleware im
 - Bearer token verification implemented.
 - Invalid/expired token handling verified.
 - `req.user` identity established safely (avoids full DB fetch).
+- GET /api/auth/me implemented.
+- Route protected by `requireAuth` middleware.
+- Authenticated user lookup implemented using `req.user.id`.
+- Safe user response verified (excludes sensitive fields).
+- Nonexistent-user behavior verified (returns 404).
 
 ## Next
-1. Implement GET /api/auth/me and POST /api/auth/logout.
+1. Implement POST /api/auth/logout.
 2. Implement protected routes and frontend authentication UI.
 
 ## Known issues

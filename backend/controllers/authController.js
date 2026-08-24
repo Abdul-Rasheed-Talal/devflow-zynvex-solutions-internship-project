@@ -143,3 +143,27 @@ export const loginUser = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Get current logged in user profile
+ * @route   GET /api/auth/me
+ * @access  Private
+ */
+export const getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      const err = new Error('User not found');
+      err.statusCode = 404;
+      return next(err);
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: user.toSafeObject(),
+    });
+  } catch (error) {
+    next(error);
+  }
+};

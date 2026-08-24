@@ -40,8 +40,16 @@ Protected endpoints require an `Authorization` header with a valid JWT using the
 - **Invalid/Expired Token**: Returns `401 Unauthorized` ("Invalid or expired token").
 - **Authenticated Request**: The server verifies the token signature and expiration, extracts the identity (`id`), and processes the request.
 
+**GET /api/auth/me**
+- **Purpose**: Get the current authenticated user's profile information.
+- **Authentication**: Requires valid `Authorization: Bearer <JWT>`.
+- **Response (Success)**: `200 OK`. Returns safe user information (`id`, `name`, `email`, `createdAt`, `updatedAt`).
+- **Validation/Error Behavior**:
+  - Unauthenticated requests return `401 Unauthorized`.
+  - If the user associated with the token no longer exists, returns `404 Not Found` ("User not found").
+- **Security**: Never returns `password` or `passwordHash`. Validates token signature prior to DB lookup.
+
 POST /api/auth/logout
-GET  /api/auth/me
 
 ### User profile
 GET /api/users/me
