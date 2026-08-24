@@ -8,7 +8,7 @@ dotenv.config();
  * Throws a descriptive error if any required variable is missing.
  */
 function validateEnv() {
-  const required = ['MONGODB_URI'];
+  const required = ['MONGODB_URI', 'JWT_SECRET'];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {

@@ -4,7 +4,7 @@
 Module 1 — Application Foundation & Authentication
 
 ## Status
-Application foundation initialized. User model implemented. Registration API implemented. Login and other auth endpoints not yet implemented.
+Application foundation initialized. User model and auth APIs implemented. Auth middleware not yet implemented.
 
 ## Completed
 - Project scope documented.
@@ -43,11 +43,15 @@ Application foundation initialized. User model implemented. Registration API imp
 - Duplicate email handling implemented safely (returns 409 Conflict).
 - Input validation implemented for registration (400 Bad Request).
 - Verification performed for missing fields, invalid fields, successful registration, and duplicate registration.
+- Login endpoint implemented (POST /api/auth/login).
+- JWT token generation implemented (jsonwebtoken, 1d expiration).
+- Password verification implemented using bcrypt.compare.
+- Invalid credential handling implemented securely (generic 401 error).
+- Environment configuration updated to strictly require JWT_SECRET.
 
 ## Next
-1. Implement login endpoint (POST /api/auth/login) with JWT.
-2. Implement auth middleware, logout, GET /api/auth/me.
-3. Implement protected routes and frontend authentication UI.
+1. Implement auth middleware, logout, GET /api/auth/me.
+2. Implement protected routes and frontend authentication UI.
 
 ## Known issues
 None.

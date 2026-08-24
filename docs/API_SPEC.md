@@ -17,7 +17,20 @@ The API contract should be kept stable and documented as endpoints are implement
   - Returns `409 Conflict` if the email is already registered.
 - **Security**: Hashes the password using `bcrypt` (salt rounds: 10) before saving to the database. Plaintext passwords are not logged or stored.
 
-POST /api/auth/login
+**POST /api/auth/login**
+- **Purpose**: Authenticate an existing user and obtain a JWT.
+- **Request Body**: JSON object containing `email` and `password`.
+- **Response (Success)**: `200 OK`. Returns a signed JWT and safe user information (`id`, `name`, `email`, `createdAt`, `updatedAt`). Does not return `passwordHash`.
+- **Validation/Error Behavior**: 
+  - Validates presence of `email` and `password`.
+  - Normalizes email to lowercase and trims whitespace.
+  - Returns `400 Bad Request` for validation failures.
+  - Returns generic `401 Unauthorized` ("Invalid email or password") for both nonexistent users and incorrect passwords to prevent email enumeration.
+- **JWT Behavior**:
+  - Signs a token containing the user's `id`.
+  - Token expires in 1 day (`1d`).
+- **Security**: Verifies the password against the stored bcrypt hash using `bcrypt.compare`. The token is cryptographically signed using `JWT_SECRET` from the environment.
+
 POST /api/auth/logout
 GET  /api/auth/me
 
