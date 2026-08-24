@@ -167,3 +167,17 @@ export const getMe = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Logout user (client should clear token)
+ * @route   POST /api/auth/logout
+ * @access  Private
+ */
+export const logoutUser = (req, res, next) => {
+  // Since we use stateless JWTs, the server does not invalidate the token here.
+  // We simply acknowledge the request, and the client must remove the token.
+  res.status(200).json({
+    success: true,
+    message: 'Logged out successfully'
+  });
+};

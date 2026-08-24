@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registerUser, loginUser, getMe } from '../controllers/authController.js';
+import { registerUser, loginUser, getMe, logoutUser } from '../controllers/authController.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -18,5 +18,10 @@ router.post('/login', loginUser);
 // @desc    Get current logged in user profile
 // @access  Private
 router.get('/me', requireAuth, getMe);
+
+// @route   POST /api/auth/logout
+// @desc    Logout user (client clears token)
+// @access  Private
+router.post('/logout', requireAuth, logoutUser);
 
 export default router;

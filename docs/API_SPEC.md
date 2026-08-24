@@ -49,7 +49,15 @@ Protected endpoints require an `Authorization` header with a valid JWT using the
   - If the user associated with the token no longer exists, returns `404 Not Found` ("User not found").
 - **Security**: Never returns `password` or `passwordHash`. Validates token signature prior to DB lookup.
 
-POST /api/auth/logout
+**POST /api/auth/logout**
+- **Purpose**: Logout the current authenticated user (contractual).
+- **Authentication**: Requires valid `Authorization: Bearer <JWT>`.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "message": "Logged out successfully" }`.
+- **Logout Semantics**:
+  - The application uses a strictly stateless JWT architecture.
+  - The server acknowledges the logout request, but **does not invalidate the token** on the backend.
+  - The *client* is strictly responsible for clearing the stored token and un-authenticating the session.
+  - Any previously issued JWT technically remains cryptographically valid until its explicit expiration if presented to the server.
 
 ### User profile
 GET /api/users/me

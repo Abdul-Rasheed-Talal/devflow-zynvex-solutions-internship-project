@@ -57,10 +57,15 @@ Application foundation initialized. User model, auth APIs, and JWT middleware im
 - Authenticated user lookup implemented using `req.user.id`.
 - Safe user response verified (excludes sensitive fields).
 - Nonexistent-user behavior verified (returns 404).
+- POST /api/auth/logout implemented.
+- Client-side logout contract established.
+- Current authentication architecture verified as strictly stateless.
+- Future Redis/revocation infrastructure intentionally deferred.
+- Future WebSocket/real-time infrastructure intentionally deferred.
+- M1-T02 authentication flow completed successfully.
 
 ## Next
-1. Implement POST /api/auth/logout.
-2. Implement protected routes and frontend authentication UI.
+1. Implement protected routes and frontend authentication UI.
 
 ## Known issues
 None.
