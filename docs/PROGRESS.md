@@ -68,9 +68,17 @@ Application foundation initialized. User model, auth APIs, and JWT middleware im
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. Implement protected routes, authentication redirects, and UI components (M1-T04).
+1. Implement route guards and authentication redirects for protected routes (M1-T04-B).
 
 ## Completed
+- **M1-T04-A: Authentication Pages & Forms**
+  - Designed professional, accessible Login and Registration forms (`LoginPage.tsx`, `RegisterPage.tsx`).
+  - Integrated React Router for `/login` and `/register`.
+  - Implemented client-side validation logic.
+  - Linked native form submission to global `authStore` actions.
+  - Successfully connected API workflows without breaking backend tests.
+  - Demonstrated error-rendering without exposing backend internals.
+  - Verified no raw tokens entered frontend architecture.
 - **M1-T03: Frontend TypeScript Migration & Authentication Foundation**
   - Frontend fully migrated from JavaScript/JSX to TypeScript/TSX.
   - Strict TypeScript checking established (`noEmit`, `strict: true`).
