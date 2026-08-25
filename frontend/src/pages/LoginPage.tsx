@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { ApiError } from '../types/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+
   const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +26,7 @@ export default function LoginPage() {
 
     try {
       await login({ email, password });
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (err: unknown) {
       const apiError = err as ApiError;
       setError(apiError.message || 'An error occurred during login');

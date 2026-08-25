@@ -18,7 +18,12 @@ async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promis
     ...options,
   };
 
-  const response = await fetch(url, config);
+  let response: Response;
+  try {
+    response = await fetch(url, config);
+  } catch (err) {
+    throw new Error('Unable to connect to the server. Please try again.') as ApiError;
+  }
 
   const data = await response.json().catch(() => null);
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import AppLayout from '../layout/AppLayout';
 import { useAuthStore } from '../../stores/authStore';
 
 export default function ProtectedRoute() {
@@ -19,5 +20,5 @@ export default function ProtectedRoute() {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return <Outlet />;
+  return <AppLayout />;
 }
