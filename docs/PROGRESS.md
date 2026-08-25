@@ -68,9 +68,15 @@ Application foundation initialized. User model, auth APIs, and JWT middleware im
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. Implement route guards and authentication redirects for protected routes (M1-T04-B).
+1. Finalize Module 1 and prepare for Module 2.
 
 ## Completed
+- **M1-T04-B: Protected Routes & Route Guards**
+  - Designed generic `ProtectedRoute.tsx` and `PublicRoute.tsx` layout components.
+  - Safely encapsulated initialization loading sequences within route guards, removing top-level blocking in `App.tsx` and allowing native `NotFoundPage` resolution.
+  - Implemented strictly-typed redirection logic preventing authenticated users from accessing `login` / `register`.
+  - Re-routed unauthenticated users safely away from protected elements without disrupting React Router navigation states.
+  - Confirmed 0 `localStorage` and 0 raw token logic entered the guards; strictly consumed `authStore` boolean flags initialized solely by `/api/auth/me`.
 - **M1-T04-A: Authentication Pages & Forms**
   - Designed professional, accessible Login and Registration forms (`LoginPage.tsx`, `RegisterPage.tsx`).
   - Integrated React Router for `/login` and `/register`.

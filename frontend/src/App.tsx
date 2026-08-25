@@ -5,6 +5,8 @@ import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import PublicRoute from './components/auth/PublicRoute';
 import { useAuthStore } from './stores/authStore';
 
 const queryClient = new QueryClient({
@@ -17,27 +19,28 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
-  const { initializeAuth, isInitializing } = useAuthStore();
+  const { initializeAuth } = useAuthStore();
 
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
 
-  if (isInitializing) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 text-gray-500">
-        Loading...
-      </div>
-    );
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<DashboardPage />} />
+          </Route>
+
+          {/* Public Authentication Routes */}
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
+
+          {/* Fallback */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
