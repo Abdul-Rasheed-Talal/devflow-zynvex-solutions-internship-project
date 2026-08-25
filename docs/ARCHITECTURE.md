@@ -19,11 +19,16 @@ Express API -> AI provider -> structured project-health result -> React UI
 
 ## Frontend
 - React + Vite
-- JavaScript
+- TypeScript + TSX
 - React Router
 - TanStack Query for server state
-- Zustand for small client/UI state
+- Zustand for client/UI and authentication state
 - Tailwind CSS for styling
+
+**Frontend Authentication**:
+- The frontend strictly acts as a consumer of the `GET /api/auth/me` endpoint to determine authentication status.
+- It never parses, reads, or manipulates JWTs.
+- `credentials: 'include'` is used globally across the typed API client for secure HttpOnly cookie transmission.
 
 ## Backend
 - Node.js

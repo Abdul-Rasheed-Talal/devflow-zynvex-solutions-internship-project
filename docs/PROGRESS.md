@@ -68,10 +68,20 @@ Application foundation initialized. User model, auth APIs, and JWT middleware im
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. Migrate frontend to TypeScript and set up Auth foundations (M1-T03).
+1. Implement protected routes, authentication redirects, and UI components (M1-T04).
 
-## Known issues
-None.
+## Completed
+- **M1-T03: Frontend TypeScript Migration & Authentication Foundation**
+  - Frontend fully migrated from JavaScript/JSX to TypeScript/TSX.
+  - Strict TypeScript checking established (`noEmit`, `strict: true`).
+  - Typed API client established using `credentials: 'include'`.
+  - Authentication types (`User`, `AuthResponse`) and `authService` created.
+  - Zustand `authStore` established for global authentication state (`isInitializing`, `isAuthenticated`, `user`).
+  - React application properly synchronizes initialization using `GET /api/auth/me`.
+  - Build (`npm run build`) and strict type checks pass.
+  - Verified no `localStorage` or `sessionStorage` usage for tokens.
+  - Verified backend regression tests pass successfully under cookie-based architecture.
+- **M1-T02-G**: Converted from `Authorization: Bearer` to `HttpOnly` cookies.
 
 ## Decision log
 - Used Node.js built-in --watch flag for backend dev script instead of adding nodemon dependency (Node v22 supports --watch natively).
