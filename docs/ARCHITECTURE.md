@@ -51,6 +51,13 @@ Backend:
 - API responses
 - AI orchestration in Module 4
 
+## Authentication Strategy
+- **Authentication mechanism**: JWT (JSON Web Tokens).
+- **Storage**: Stateless HttpOnly cookies (`devflow_access_token`), configured with `SameSite=lax` to mitigate CSRF. `HttpOnly` reduces token-theft risk from XSS by preventing client-side JavaScript from reading the cookie.
+- **Passwords**: Hashed with bcrypt (10 rounds).
+- **Authorization**: Middleware intercepts incoming requests, verifies the JWT in the cookie, and attaches the user's ID to the request object.
+- **Logout**: Stateless cookie destruction via `Set-Cookie: devflow_access_token=; Max-Age=0`. The backend does not maintain a blocklist.
+
 Database:
 - persistent application data
 

@@ -12,6 +12,7 @@ async function apiClient(endpoint, options = {}) {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include', // Send cookies with requests
     ...options,
   };
 

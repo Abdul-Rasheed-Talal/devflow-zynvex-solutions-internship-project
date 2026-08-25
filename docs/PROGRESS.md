@@ -58,14 +58,17 @@ Application foundation initialized. User model, auth APIs, and JWT middleware im
 - Safe user response verified (excludes sensitive fields).
 - Nonexistent-user behavior verified (returns 404).
 - POST /api/auth/logout implemented.
-- Client-side logout contract established.
 - Current authentication architecture verified as strictly stateless.
+- **Architecture Migration Completed**:
+  - Converted from `Authorization: Bearer` to `HttpOnly` cookies.
+  - `devflow_access_token` securely handles the JWT.
+  - Token-theft risk from XSS reduced, CORS properly configured with credentials.
 - Future Redis/revocation infrastructure intentionally deferred.
 - Future WebSocket/real-time infrastructure intentionally deferred.
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. Implement protected routes and frontend authentication UI.
+1. Migrate frontend to TypeScript and set up Auth foundations (M1-T03).
 
 ## Known issues
 None.

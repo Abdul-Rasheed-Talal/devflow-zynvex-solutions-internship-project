@@ -22,7 +22,8 @@ function validateEnv() {
     port: parseInt(process.env.PORT, 10) || 5000,
     nodeEnv: process.env.NODE_ENV || 'development',
     mongodbUri: process.env.MONGODB_URI,
-    jwtSecret: process.env.JWT_SECRET, // Not used yet — will be required in auth task
+    jwtSecret: process.env.JWT_SECRET,
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173', // Not used yet — will be required in auth task
   };
 }
 

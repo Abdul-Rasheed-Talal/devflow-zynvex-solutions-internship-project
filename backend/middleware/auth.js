@@ -2,28 +2,25 @@ import jwt from 'jsonwebtoken';
 import env from '../config/env.js';
 
 /**
- * Middleware to require valid JWT authentication.
- * Checks for Authorization header, verifies Bearer token,
- * and populates req.user with the decoded identity.
+ * Middleware to protect routes.
+ * Ensures the user has a valid JWT in the HttpOnly cookie.
  */
 export const requireAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    const error = new Error('Authentication required');
-    error.statusCode = 401;
-    return next(error);
-  }
-
-  const token = authHeader.split(' ')[1];
-
-  if (!token) {
-    const error = new Error('Authentication required');
-    error.statusCode = 401;
-    return next(error);
-  }
-
   try {
+    let token;
+
+    // Check if the token exists in cookies
+    if (req.cookies && req.cookies.devflow_access_token) {
+      token = req.cookies.devflow_access_token;
+    }
+
+    if (!token) {
+      const error = new Error('Authentication required');
+      error.statusCode = 401;
+      return next(error);
+    }
+
+    // Verify token
     const decoded = jwt.verify(token, env.jwtSecret);
     
     // Attach only necessary identity info

@@ -128,16 +128,22 @@ export const loginUser = async (req, res, next) => {
 
     // 4. Generate JWT
     const token = jwt.sign({ id: user._id.toString() }, env.jwtSecret, {
-      expiresIn: '1d', // Token expires in 1 day
+      expiresIn: '1d',
     });
 
-    // 5. Return token and safe user info
+    // 5. Set JWT as HttpOnly cookie
+    res.cookie('devflow_access_token', token, {
+      httpOnly: true,
+      secure: env.nodeEnv === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      path: '/'
+    });
+
+    // 6. Return safe user info (without token in body)
     res.status(200).json({
       success: true,
-      data: {
-        token,
-        user: user.toSafeObject(),
-      },
+      data: user.toSafeObject(),
     });
   } catch (error) {
     next(error);
@@ -174,8 +180,14 @@ export const getMe = async (req, res, next) => {
  * @access  Private
  */
 export const logoutUser = (req, res, next) => {
-  // Since we use stateless JWTs, the server does not invalidate the token here.
-  // We simply acknowledge the request, and the client must remove the token.
+  // Clear the HttpOnly authentication cookie
+  res.clearCookie('devflow_access_token', {
+    httpOnly: true,
+    secure: env.nodeEnv === 'production',
+    sameSite: 'lax',
+    path: '/'
+  });
+
   res.status(200).json({
     success: true,
     message: 'Logged out successfully'

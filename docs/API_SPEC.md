@@ -18,9 +18,9 @@ The API contract should be kept stable and documented as endpoints are implement
 - **Security**: Hashes the password using `bcrypt` (salt rounds: 10) before saving to the database. Plaintext passwords are not logged or stored.
 
 **POST /api/auth/login**
-- **Purpose**: Authenticate an existing user and obtain a JWT.
+- **Purpose**: Authenticate an existing user and obtain an HttpOnly cookie JWT.
 - **Request Body**: JSON object containing `email` and `password`.
-- **Response (Success)**: `200 OK`. Returns a signed JWT and safe user information (`id`, `name`, `email`, `createdAt`, `updatedAt`). Does not return `passwordHash`.
+- **Response (Success)**: `200 OK`. Returns safe user information (`id`, `name`, `email`, `createdAt`, `updatedAt`). Does not return `passwordHash`. Responds with `Set-Cookie: devflow_access_token=<JWT>; HttpOnly; ...`
 - **Validation/Error Behavior**: 
   - Validates presence of `email` and `password`.
   - Normalizes email to lowercase and trims whitespace.
@@ -32,9 +32,7 @@ The API contract should be kept stable and documented as endpoints are implement
 - **Security**: Verifies the password against the stored bcrypt hash using `bcrypt.compare`. The token is cryptographically signed using `JWT_SECRET` from the environment.
 
 ### Protected Endpoints
-Protected endpoints require an `Authorization` header with a valid JWT using the `Bearer` scheme:
-
-`Authorization: Bearer <JWT>`
+Protected endpoints require a valid JWT stored in the `devflow_access_token` HttpOnly cookie.
 
 - **Missing/Malformed Token**: Returns `401 Unauthorized` ("Authentication required").
 - **Invalid/Expired Token**: Returns `401 Unauthorized` ("Invalid or expired token").
@@ -42,7 +40,7 @@ Protected endpoints require an `Authorization` header with a valid JWT using the
 
 **GET /api/auth/me**
 - **Purpose**: Get the current authenticated user's profile information.
-- **Authentication**: Requires valid `Authorization: Bearer <JWT>`.
+- **Authentication**: Requires valid `devflow_access_token` cookie.
 - **Response (Success)**: `200 OK`. Returns safe user information (`id`, `name`, `email`, `createdAt`, `updatedAt`).
 - **Validation/Error Behavior**:
   - Unauthenticated requests return `401 Unauthorized`.
@@ -51,13 +49,13 @@ Protected endpoints require an `Authorization` header with a valid JWT using the
 
 **POST /api/auth/logout**
 - **Purpose**: Logout the current authenticated user (contractual).
-- **Authentication**: Requires valid `Authorization: Bearer <JWT>`.
-- **Response (Success)**: `200 OK`. Returns `{ "success": true, "message": "Logged out successfully" }`.
+- **Authentication**: Requires valid `devflow_access_token` cookie.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "message": "Logged out successfully" }`. Responds with `Set-Cookie: devflow_access_token=; Max-Age=0` to clear the cookie.
 - **Logout Semantics**:
   - The application uses a strictly stateless JWT architecture.
-  - The server acknowledges the logout request, but **does not invalidate the token** on the backend.
-  - The *client* is strictly responsible for clearing the stored token and un-authenticating the session.
-  - Any previously issued JWT technically remains cryptographically valid until its explicit expiration if presented to the server.
+  - The server acknowledges the logout request and instructs the browser to clear the cookie.
+  - The *client* browser handles cookie destruction automatically.
+  - Any previously issued JWT technically remains cryptographically valid until its explicit expiration if somehow presented to the server.
 
 ### User profile
 GET /api/users/me
