@@ -1,10 +1,10 @@
 # DevFlow — Progress
 
 ## Current module
-Module 1 — Application Foundation & Authentication
+Module 2 — Project, Team & Task Management
 
 ## Status
-Application foundation initialized. User model, auth APIs, and JWT middleware implemented.
+Module 1 complete. Module 2 specifications defined. Project database model and backend foundation established.
 
 ## Completed
 - Project scope documented.
@@ -68,9 +68,21 @@ Application foundation initialized. User model, auth APIs, and JWT middleware im
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. Finalize Module 1 and prepare for Module 2.
+1. M2-T03 — Project CRUD API
 
 ## Completed
+- **M2-T02 — Project Database Model & Backend Foundation**
+  - Created Project schema in `backend/models/Project.js`.
+  - Implemented constraints: name length (100), description length (1000).
+  - Implemented enums: status (`planning`, `active`, `on_hold`, `completed`, `archived`) and priority (`low`, `medium`, `high`, `urgent`).
+  - Added indexes on `owner` and `members` fields.
+  - Implemented `pre('validate')` hook to ensure `dueDate >= startDate`.
+  - Implemented `pre('save')` hook to automatically filter duplicate member ObjectIds.
+  - Wrote standalone test script `backend/test_project.js` to rigorously verify validation, constraints, and custom hooks.
+  - All tests passed. Backend foundation is strictly prepared for M2-T03.
+- **M2-T01: Create Module 2 Specification**
+  - Designed and finalized `docs/MODULE_2.md` with explicit CRUD, membership, and Kanban guidelines.
+  - Updated `README.md` to indicate transition to Module 2.
 - **M1-T06: Public Landing Page & Route Architecture**
   - Created professional public LandingPage at `/`.
   - Migrated authenticated dashboard to `/app/dashboard`.
