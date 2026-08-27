@@ -71,6 +71,12 @@ Application foundation initialized. User model, auth APIs, and JWT middleware im
 1. Finalize Module 1 and prepare for Module 2.
 
 ## Completed
+- **M1-T06: Public Landing Page & Route Architecture**
+  - Created professional public LandingPage at `/`.
+  - Migrated authenticated dashboard to `/app/dashboard`.
+  - Adjusted `App.tsx` router configuration to cleanly separate public and protected namespaces.
+  - Updated `PublicRoute.tsx` and `LoginPage.tsx` default redirects to `/app/dashboard`.
+  - Maintained complete security posture (zero token leakage, zero localStorage).
 - **M1-T04-B: Protected Routes & Route Guards**
   - Designed generic `ProtectedRoute.tsx` and `PublicRoute.tsx` layout components.
   - Safely encapsulated initialization loading sequences within route guards, removing top-level blocking in `App.tsx` and allowing native `NotFoundPage` resolution.

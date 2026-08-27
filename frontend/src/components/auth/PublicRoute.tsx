@@ -14,7 +14,7 @@ export default function PublicRoute() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app/dashboard" replace />;
   }
 
   return <Outlet />;

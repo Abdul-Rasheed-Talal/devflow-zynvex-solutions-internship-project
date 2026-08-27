@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
 import { ApiError } from '../types/auth';
+import AuthLayoutBackground from '../components/auth/AuthLayoutBackground';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -42,8 +43,8 @@ export default function RegisterPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full bg-white p-8 border border-gray-200 shadow-sm text-center">
+      <AuthLayoutBackground>
+        <div className="text-center">
           <h2 className="text-2xl font-semibold text-green-700 mb-4">Registration Successful</h2>
           <p className="text-gray-600 mb-6">Your account has been created successfully. You can now sign in using your credentials.</p>
           <Link
@@ -53,14 +54,13 @@ export default function RegisterPage() {
             Go to Sign In
           </Link>
         </div>
-      </div>
+      </AuthLayoutBackground>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full bg-white p-8 border border-gray-200 shadow-sm">
-        <div>
+    <AuthLayoutBackground>
+      <div>
           <h2 className="text-2xl font-semibold text-gray-900">Create an account</h2>
           <p className="mt-2 text-sm text-gray-600">
             Join DevFlow to manage your projects.
@@ -165,7 +165,6 @@ export default function RegisterPage() {
             </Link>
           </p>
         </div>
-      </div>
-    </div>
+    </AuthLayoutBackground>
   );
 }

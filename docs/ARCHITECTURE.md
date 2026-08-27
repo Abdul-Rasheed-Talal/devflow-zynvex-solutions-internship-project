@@ -38,6 +38,16 @@ Express API -> AI provider -> structured project-health result -> React UI
 - bcrypt password hashing
 - Mongoose data layer
 
+## Routing Architecture
+Public Routes:
+- `/` - Public Landing Page (Unauthenticated visitors)
+- `/login` - Login Page (Redirects to dashboard if authenticated)
+- `/register` - Registration Page (Redirects to dashboard if authenticated)
+
+Protected Routes (`/app` namespace):
+- `/app/*` - Protected application shell wrapped in `AppLayout`
+- `/app/dashboard` - Main authenticated user dashboard
+
 ## Responsibility boundaries
 Frontend:
 - UI

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { ApiError } from '../types/auth';
+import AuthLayoutBackground from '../components/auth/AuthLayoutBackground';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/app/dashboard';
 
   const { login } = useAuthStore();
   const [email, setEmail] = useState('');
@@ -36,9 +37,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full bg-white p-8 border border-gray-200 shadow-sm">
-        <div>
+    <AuthLayoutBackground>
+      <div>
           <h2 className="text-2xl font-semibold text-gray-900">Sign in to DevFlow</h2>
           <p className="mt-2 text-sm text-gray-600">
             Welcome back to your workspace.
@@ -107,7 +107,6 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-      </div>
-    </div>
+    </AuthLayoutBackground>
   );
 }
