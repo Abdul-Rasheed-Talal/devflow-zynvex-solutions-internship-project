@@ -68,9 +68,22 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T04 — Project management frontend
+1. M2-T05 — Project Membership Backend
 
 ## Completed
+- **M2-T04 — Project Management Frontend**
+  - Created strongly typed `Project` and API payload interfaces in `src/types/project.ts`.
+  - Implemented `projectService.ts` wrapping `apiClient` for all CRUD endpoints.
+  - Implemented React Query hooks (`useProjectQueries.ts`) for fetching, caching, and invalidation.
+  - Created `ProjectBadges.tsx` and `ProjectForm.tsx` components.
+  - Added `/app/projects`, `/app/projects/new`, and `/app/projects/:projectId` routes to `App.tsx`.
+  - Updated `Sidebar.tsx` navigation.
+  - Built comprehensive `ProjectsPage` (list), `NewProjectPage` (create), and `ProjectDetailPage` (read/update/delete).
+  - Implemented client-side validation mimicking backend constraints.
+  - Added full loading (skeletons), empty, error (401/403/404), and UI feedback states.
+  - Avoided any new UI design deviations; strictly adhered to `UI_DESIGN_SYSTEM.md`.
+  - Verified no state/JWT tampering capabilities exist on the frontend.
+  - Passed `tsc --noEmit`, production build, and all backend API/Auth regression tests.
 - **M2-T03 — Project CRUD API**
   - Created `backend/controllers/projectController.js` with 5 controller functions.
   - Created `backend/routes/projects.js` with route definitions.

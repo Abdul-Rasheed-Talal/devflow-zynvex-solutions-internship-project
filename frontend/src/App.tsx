@@ -6,6 +6,9 @@ import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ProjectsPage from './pages/projects/ProjectsPage';
+import NewProjectPage from './pages/projects/NewProjectPage';
+import ProjectDetailPage from './pages/projects/ProjectDetailPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import PublicRoute from './components/auth/PublicRoute';
 import { useAuthStore } from './stores/authStore';
@@ -37,6 +40,9 @@ export default function App() {
           <Route path="/app" element={<ProtectedRoute />}>
             <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="projects" element={<ProjectsPage />} />
+            <Route path="projects/new" element={<NewProjectPage />} />
+            <Route path="projects/:projectId" element={<ProjectDetailPage />} />
           </Route>
 
           {/* Public Authentication Routes */}
