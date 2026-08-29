@@ -76,6 +76,76 @@ GET /api/health
 
 Returns a simple JSON response confirming the API is running. No authentication required.
 
+## Module 2 — Project CRUD
+
+All project endpoints require authentication via the `devflow_access_token` HttpOnly cookie.
+
+### Authorization model
+
+| Operation | Owner | Member | Unrelated |
+|---|---|---|---|
+| List projects | sees own | sees shared | empty list |
+| View project | 200 | 200 | 403 |
+| Create project | 201 | 201 | 201 |
+| Update project | 200 | 403 | 403 |
+| Delete project | 200 | 403 | 403 |
+
+**GET /api/projects**
+- **Purpose**: List projects the authenticated user owns or is a member of.
+- **Authentication**: Required.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...] }`.
+- **Empty case**: Returns `{ "success": true, "data": [] }` (not an error).
+- **Sorting**: Most recently updated first.
+
+**POST /api/projects**
+- **Purpose**: Create a new project.
+- **Authentication**: Required. The authenticated user becomes the owner.
+- **Request Body**: `{ "name", "description", "status", "priority", "startDate", "dueDate" }`.
+- **Accepted fields**: Only `name`, `description`, `status`, `priority`, `startDate`, `dueDate`. Any `owner` or `members` field in the body is ignored.
+- **Defaults**: `status` defaults to `planning`, `priority` defaults to `medium`, `members` defaults to `[]`.
+- **Response (Success)**: `201 Created`. Returns `{ "success": true, "data": { ... } }`.
+- **Validation/Error Behavior**:
+  - `name` is required. Returns `400` if missing or exceeds 100 characters.
+  - `description` must not exceed 1000 characters.
+  - `status` must be one of: `planning`, `active`, `on_hold`, `completed`, `archived`.
+  - `priority` must be one of: `low`, `medium`, `high`, `urgent`.
+  - `dueDate` must be >= `startDate` if both are provided.
+- **Security**: The `owner` field is always derived from `req.user.id`. Client-supplied `owner` values are discarded.
+
+**GET /api/projects/:projectId**
+- **Purpose**: Get a single project by ID.
+- **Authentication**: Required.
+- **Authorization**: Owner or member only.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": { ... } }`.
+- **Error Behavior**:
+  - Invalid ObjectId: `400 Bad Request`.
+  - Project does not exist: `404 Not Found`.
+  - User is not owner or member: `403 Forbidden`.
+
+**PATCH /api/projects/:projectId**
+- **Purpose**: Update project details.
+- **Authentication**: Required.
+- **Authorization**: Owner only.
+- **Updatable fields**: `name`, `description`, `status`, `priority`, `startDate`, `dueDate`.
+- **Protected fields**: `_id`, `owner`, `members`, `createdAt`, `updatedAt` cannot be modified through this endpoint.
+- **Response (Success)**: `200 OK`. Returns updated project.
+- **Error Behavior**:
+  - Invalid ObjectId: `400`.
+  - Project does not exist: `404`.
+  - Not the owner: `403`.
+  - No valid fields provided: `400`.
+  - Invalid field values: `400`.
+
+**DELETE /api/projects/:projectId**
+- **Purpose**: Delete a project.
+- **Authentication**: Required.
+- **Authorization**: Owner only.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "message": "Project deleted successfully" }`.
+- **Error Behavior**:
+  - Invalid ObjectId: `400`.
+  - Project does not exist: `404`.
+  - Not the owner: `403`.
+
 ## API rules
 - JSON request/response.
 - Consistent success/error structure.

@@ -4,7 +4,7 @@
 Module 2 — Project, Team & Task Management
 
 ## Status
-Module 1 complete. Module 2 specifications defined. Project database model and backend foundation established.
+Module 1 complete. Module 2 in progress. Project CRUD API implemented and verified.
 
 ## Completed
 - Project scope documented.
@@ -68,9 +68,24 @@ Module 1 complete. Module 2 specifications defined. Project database model and b
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T03 — Project CRUD API
+1. M2-T04 — Project management frontend
 
 ## Completed
+- **M2-T03 — Project CRUD API**
+  - Created `backend/controllers/projectController.js` with 5 controller functions.
+  - Created `backend/routes/projects.js` with route definitions.
+  - Mounted project routes at `/api/projects` in `backend/routes/index.js`.
+  - Implemented GET /api/projects (list accessible projects via `$or` query on owner/members).
+  - Implemented POST /api/projects (create with owner from `req.user.id`, field whitelist).
+  - Implemented GET /api/projects/:projectId (owner or member access, 403 for unauthorized).
+  - Implemented PATCH /api/projects/:projectId (owner only, field whitelist, protected fields).
+  - Implemented DELETE /api/projects/:projectId (owner only).
+  - Added `canAccessProject` and `isProjectOwner` helper functions for reusable authorization.
+  - Added `pickFields` helper to prevent mass-assignment.
+  - ObjectId validation on all parameterized routes.
+  - Updated `docs/API_SPEC.md` with full endpoint documentation and authorization table.
+  - Wrote `backend/test_projects.js` with 43 tests covering auth, CRUD, authorization, and validation.
+  - All 43 tests passed. Auth regression test passed.
 - **M2-T02 — Project Database Model & Backend Foundation**
   - Created Project schema in `backend/models/Project.js`.
   - Implemented constraints: name length (100), description length (1000).
