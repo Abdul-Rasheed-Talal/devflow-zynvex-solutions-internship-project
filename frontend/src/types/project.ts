@@ -64,3 +64,21 @@ export const PROJECT_PRIORITIES: { value: ProjectPriority; label: string }[] = [
   { value: 'high', label: 'High' },
   { value: 'urgent', label: 'Urgent' },
 ];
+
+// Membership types matching the backend toSafeObject() response
+export interface ProjectMember {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectMemberListResponse {
+  success: boolean;
+  data: ProjectMember[];
+}
+
+export interface AddMemberInput {
+  userId: string;
+}

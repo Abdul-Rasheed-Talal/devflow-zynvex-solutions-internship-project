@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useCreateProject } from '../../hooks/useProjectQueries';
 import ProjectForm from '../../components/projects/ProjectForm';
-import type { CreateProjectInput } from '../../types/project';
+import type { CreateProjectInput, UpdateProjectInput } from '../../types/project';
 import type { ApiError } from '../../types/auth';
 
 export default function NewProjectPage() {
@@ -10,9 +10,9 @@ export default function NewProjectPage() {
   const createMutation = useCreateProject();
   const [apiError, setApiError] = useState<string | null>(null);
 
-  function handleSubmit(data: CreateProjectInput) {
+  function handleSubmit(data: CreateProjectInput | UpdateProjectInput) {
     setApiError(null);
-    createMutation.mutate(data, {
+    createMutation.mutate(data as CreateProjectInput, {
       onSuccess: (response) => {
         navigate(`/app/projects/${response.data._id}`);
       },

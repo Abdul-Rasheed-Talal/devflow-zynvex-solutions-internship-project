@@ -68,9 +68,22 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T06 — Project Kanban/Task Backend
+1. M2-T07 — Task Database Model & Backend Foundation
 
 ## Completed
+- **M2-T06 — Project Membership Frontend**
+  - Extended `src/types/project.ts` with `ProjectMember`, `ProjectMemberListResponse`, and `AddMemberInput` types.
+  - Extended `src/services/projectService.ts` with `getMembers`, `addMember`, and `removeMember` methods.
+  - Extended `src/hooks/useProjectQueries.ts` with `projectKeys.members`, `useProjectMembers`, `useAddMember`, and `useRemoveMember` hooks.
+  - Created `src/components/projects/ProjectMembers.tsx` with loading, empty, error, and populated states.
+  - Integrated `ProjectMembers` into `ProjectDetailPage.tsx` between the project info card and the delete dialog.
+  - Owner sees member list, "Add member" form (userId input with ObjectId validation), and per-member "Remove" controls.
+  - Non-owner sees a brief note that membership is managed by the owner.
+  - Add-member handles 400/401/403/404/409 with user-friendly error messages.
+  - Remove-member requires explicit confirmation dialog before executing.
+  - Owner cannot remove themselves (remove button hidden for owner ID).
+  - Mutations invalidate both `members` and `detail` query keys for cache synchronization.
+  - Passed `tsc --noEmit`, `npm run build`, and all backend regression tests (auth, projects, membership).
 - **M2-T05 — Project Membership Backend/API**
   - Added `getProjectMembers`, `addProjectMember`, and `removeProjectMember` to `backend/controllers/projectController.js`.
   - Added corresponding routes to `backend/routes/projects.js` (`GET/POST /api/projects/:projectId/members`, `DELETE /api/projects/:projectId/members/:userId`).

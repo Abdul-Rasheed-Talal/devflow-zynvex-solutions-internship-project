@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProject, useUpdateProject, useDeleteProject } from '../../hooks/useProjectQueries';
 import { StatusBadge, PriorityBadge } from '../../components/projects/ProjectBadges';
 import ProjectForm from '../../components/projects/ProjectForm';
+import ProjectMembers from '../../components/projects/ProjectMembers';
 import { useAuthStore } from '../../stores/authStore';
 import type { UpdateProjectInput } from '../../types/project';
 import type { ApiError } from '../../types/auth';
@@ -237,6 +238,13 @@ export default function ProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Team members section */}
+      <ProjectMembers
+        projectId={projectId!}
+        isOwner={isOwner}
+        ownerId={project.owner}
+      />
 
       {/* Delete confirmation dialog */}
       {showDeleteConfirm && (
