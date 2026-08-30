@@ -186,7 +186,7 @@ async function testListing() {
   // Add member to project manually for membership tests
   const Project = (await import('./models/Project.js')).default;
   await Project.findByIdAndUpdate(createdProjectId, {
-    $addToSet: { members: memberUserId },
+    $addToSet: { members: { user: memberUserId, role: 'member', addedAt: new Date() } },
   });
 
   // Member sees project
@@ -285,7 +285,7 @@ async function testDeletion() {
   // Add member for authorization test
   const Project = (await import('./models/Project.js')).default;
   await Project.findByIdAndUpdate(deleteId, {
-    $addToSet: { members: memberUserId },
+    $addToSet: { members: { user: memberUserId, role: 'member', addedAt: new Date() } },
   });
 
   // Member receives 403

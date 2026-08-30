@@ -8,7 +8,10 @@ import User from '../models/User.js';
 function canAccessProject(project, userId) {
   const uid = userId.toString();
   if (project.owner.toString() === uid) return true;
-  return project.members.some((m) => m.toString() === uid);
+  return project.members.some((m) => {
+    const memberId = m.user ? m.user.toString() : m.toString();
+    return memberId === uid;
+  });
 }
 
 /**
@@ -54,7 +57,10 @@ export const getProjects = async (req, res, next) => {
     const userId = req.user.id;
 
     const projects = await Project.find({
-      $or: [{ owner: userId }, { members: userId }],
+      $or: [
+        { owner: userId },
+        { 'members.user': userId }
+      ],
     }).sort({ updatedAt: -1 });
 
     res.status(200).json({
@@ -249,7 +255,7 @@ export const getProjectMembers = async (req, res, next) => {
       return next(err);
     }
 
-    const project = await Project.findById(projectId).populate('members');
+    const project = await Project.findById(projectId).populate('members.user');
 
     if (!project) {
       const err = new Error('Project not found');
@@ -263,7 +269,12 @@ export const getProjectMembers = async (req, res, next) => {
       return next(err);
     }
 
-    const safeMembers = project.members.map((member) => member.toSafeObject());
+    const safeMembers = project.members.map((member) => {
+      if (!member.user) {
+        return member.toSafeObject ? member.toSafeObject() : member;
+      }
+      return member.user.toSafeObject ? member.user.toSafeObject() : member.user;
+    });
 
     res.status(200).json({
       success: true,
@@ -323,14 +334,17 @@ export const addProjectMember = async (req, res, next) => {
       return next(err);
     }
 
-    const isAlreadyMember = project.members.some((m) => m.toString() === userId.toString());
+    const isAlreadyMember = project.members.some((m) => {
+      const memberId = m.user ? m.user.toString() : m.toString();
+      return memberId === userId.toString();
+    });
     if (isAlreadyMember) {
       const err = new Error('User is already a member');
       err.statusCode = 409;
       return next(err);
     }
 
-    project.members.push(userId);
+    project.members.push({ user: userId });
     await project.save();
 
     res.status(200).json({
@@ -383,14 +397,20 @@ export const removeProjectMember = async (req, res, next) => {
       return next(err);
     }
 
-    const isMember = project.members.some((m) => m.toString() === userId.toString());
+    const isMember = project.members.some((m) => {
+      const memberId = m.user ? m.user.toString() : m.toString();
+      return memberId === userId.toString();
+    });
     if (!isMember) {
       const err = new Error('User is not a member of this project');
       err.statusCode = 404;
       return next(err);
     }
 
-    project.members = project.members.filter((m) => m.toString() !== userId.toString());
+    project.members = project.members.filter((m) => {
+      const memberId = m.user ? m.user.toString() : m.toString();
+      return memberId !== userId.toString();
+    });
     await project.save();
 
     res.status(200).json({

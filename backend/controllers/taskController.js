@@ -9,7 +9,10 @@ import User from '../models/User.js';
 function canAccessProject(project, userId) {
   const uid = userId.toString();
   if (project.owner.toString() === uid) return true;
-  return project.members.some((m) => m.toString() === uid);
+  return project.members.some((m) => {
+    const memberId = m.user ? m.user.toString() : m.toString();
+    return memberId === uid;
+  });
 }
 
 /**

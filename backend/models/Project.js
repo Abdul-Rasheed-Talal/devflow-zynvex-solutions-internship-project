@@ -19,16 +19,26 @@ const projectSchema = new mongoose.Schema(
       required: [true, 'Project owner is required'],
       index: true,
     },
-    members: {
-      type: [
-        {
+    members: [
+      {
+        user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'User',
+          required: true
         },
-      ],
-      default: [],
-      index: true,
-    },
+        role: {
+          type: String,
+          enum: ['admin', 'member', 'viewer'],
+          default: 'member',
+          required: true
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+          required: true
+        }
+      }
+    ],
     status: {
       type: String,
       enum: {
@@ -69,11 +79,19 @@ projectSchema.pre('validate', function () {
 // Prevent duplicate members automatically on save
 projectSchema.pre('save', function () {
   if (this.isModified('members') && this.members && this.members.length > 0) {
-    const memberStrings = this.members.map((id) => id.toString());
-    const uniqueMembers = [...new Set(memberStrings)];
+    const uniqueUsers = new Set();
+    const filteredMembers = [];
     
-    if (uniqueMembers.length !== memberStrings.length) {
-      this.members = uniqueMembers.map((id) => new mongoose.Types.ObjectId(id));
+    for (const member of this.members) {
+      const userId = member.user ? member.user.toString() : member.toString();
+      if (!uniqueUsers.has(userId)) {
+        uniqueUsers.add(userId);
+        filteredMembers.push(member);
+      }
+    }
+    
+    if (filteredMembers.length !== this.members.length) {
+      this.members = filteredMembers;
     }
   }
 });

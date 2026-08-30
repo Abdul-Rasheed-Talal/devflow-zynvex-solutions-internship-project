@@ -68,9 +68,17 @@ Module 3 specification complete. Proceeding to RBAC foundation.
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M3-T02 — RBAC & Membership Schema Migration
+1. M3-T03 — Role Enforcement Middleware & Controller Updates
 
 ## Completed
+- **M3-T02 — RBAC & Membership Schema Migration**
+  - Migrated `Project.members` from `[ObjectId]` to `[{ user: ObjectId, role: String, addedAt: Date }]`.
+  - Created robust, idempotent migration script (`backend/migrations/migrateProjectMemberships.js`).
+  - Default migrated role set safely to `member`.
+  - Implemented data-integrity safety checks filtering out duplicates and accidental owner insertion.
+  - Implemented backward-compatibility adjustments in `projectController.js` and `taskController.js` to ensure the new object structure seamlessly works with existing `canAccessProject` helpers.
+  - Executed full test suite (`test_auth.js`, `test_projects.js`, `test_project_members.js`, `test_task.js`, `test_tasks.js`) achieving 100% pass rate.
+  - Created strict validation tests in `test_project_membership_migration.js` with 19 passed assertions.
 - **M3-T01 — Specification & Architecture**
   - Analyzed Module 2 architecture to establish RBAC requirements.
   - Defined explicit roles: Owner, Admin, Member, Viewer with strict permission boundaries.

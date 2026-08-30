@@ -68,7 +68,7 @@ async function runTests() {
       name: 'Valid Project',
       description: 'A valid description',
       owner: mockOwnerId,
-      members: [mockMemberId1],
+      members: [{ user: mockMemberId1 }],
       startDate: new Date('2026-01-01'),
       dueDate: new Date('2026-12-31')
     });
@@ -103,7 +103,7 @@ async function runTests() {
     const dupProject = await Project.create({
       name: 'Duplicate Test',
       owner: mockOwnerId,
-      members: [mockMemberId1, mockMemberId1, mockMemberId2]
+      members: [{ user: mockMemberId1 }, { user: mockMemberId1 }, { user: mockMemberId2 }]
     });
     
     if (dupProject.members.length !== 2) {
