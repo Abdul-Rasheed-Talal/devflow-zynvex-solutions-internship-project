@@ -1,10 +1,10 @@
 # DevFlow — Progress
 
 ## Current module
-Module 2 — Project, Team & Task Management
+Module 3 — Collaboration, Permissions & Analytics
 
 ## Status
-Module 1 complete. Module 2 in progress. Project CRUD API implemented and verified.
+Module 2 complete. Module 3 planned next.
 
 ## Completed
 - Project scope documented.
@@ -68,9 +68,19 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T12 — (Next Module 2 Task)
+1. Module 3 — (Next planned module)
 
 ## Completed
+- **M2-T12 — Module 2 Integration, Testing & Hardening**
+  - Conducted full specification and API audit against `MODULE_2.md` and `API_SPEC.md`.
+  - Verified authorization constraints (owner vs. member vs. unrelated) across all project, member, and task resources.
+  - Verified mass-assignment protections for sensitive fields (`owner`, `project`, `creator`).
+  - Verified no sensitive data (passwordHash, unencrypted tokens) is exposed in API payloads.
+  - Ensured no duplicate or unexpected dependencies were introduced.
+  - Validated frontend build and strictly typed codebase (`npx tsc --noEmit` and `npm run build`).
+  - Executed full backend test suites ensuring 157/157 passing assertions (Auth, Projects, Members, Task Model, Task API).
+  - Fixed subtle TypeScript mismatches in `useTaskQueries` optimistic updates for Kanban status.
+  - Module 2 declared successfully complete and hardened.
 - **M2-T11 — Kanban Board & Persisted Drag-and-Drop**
   - Designed and deployed `KanbanBoard` and `KanbanColumn` architecture.
   - Implemented lightweight native HTML5 Drag-and-Drop API without pulling in heavy external packages.

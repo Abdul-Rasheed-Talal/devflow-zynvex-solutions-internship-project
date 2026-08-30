@@ -13,7 +13,7 @@ DevFlow is a MERN-based project management platform for software development tea
 
 ## Current status
 
-Module 1 is complete. Currently planning and building **Module 2 — Project, Team & Task Management**.
+Module 1 and Module 2 are complete. Currently planning and building **Module 3 — Collaboration, Permissions & Analytics**.
 
 See:
 - `AGENTS.md` — AI-agent engineering rules

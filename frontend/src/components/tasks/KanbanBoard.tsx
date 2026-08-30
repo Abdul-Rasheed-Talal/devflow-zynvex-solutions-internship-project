@@ -47,9 +47,18 @@ export default function KanbanBoard({ projectId, tasks, onTaskClick, onError }: 
   });
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x items-stretch h-full">
+    <div 
+      className="flex gap-4 overflow-x-auto pb-4 pt-1 items-stretch h-full
+        [&::-webkit-scrollbar]:h-2
+        [&::-webkit-scrollbar-track]:bg-gray-100/50
+        [&::-webkit-scrollbar-track]:rounded-full
+        [&::-webkit-scrollbar-thumb]:bg-gray-300
+        [&::-webkit-scrollbar-thumb]:rounded-full
+        hover:[&::-webkit-scrollbar-thumb]:bg-gray-400
+        transition-colors"
+    >
       {TASK_STATUSES.map(statusObj => (
-        <div key={statusObj.value} className="snap-start flex-1 min-w-[280px] sm:min-w-[320px]">
+        <div key={statusObj.value} className="flex-1 min-w-[280px] sm:min-w-[300px] max-w-[350px] shrink-0">
           <KanbanColumn
             status={statusObj.value}
             tasks={tasksByStatus[statusObj.value]}

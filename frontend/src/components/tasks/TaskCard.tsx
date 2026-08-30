@@ -35,18 +35,36 @@ export default function TaskCard({ task, onClick, onStatusChange }: TaskCardProp
     }
   };
 
+  const getStatusColor = (status: TaskStatus) => {
+    switch (status) {
+      case 'todo': return 'border-l-gray-300';
+      case 'in_progress': return 'border-l-blue-400';
+      case 'review': return 'border-l-purple-400';
+      case 'done': return 'border-l-green-400';
+      default: return 'border-l-gray-200';
+    }
+  };
+
   return (
     <div
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={() => onClick && onClick(task)}
-      className={`bg-white border border-gray-200 rounded p-4 shadow-sm hover:shadow transition-shadow flex flex-col h-full ${onClick ? 'cursor-pointer' : ''} cursor-grab active:cursor-grabbing`}
+      className={`bg-white border-y border-r border-l-4 border-y-gray-200 border-r-gray-200 ${getStatusColor(task.status)} rounded-lg p-4 shadow-sm hover:shadow-md transition-all flex flex-col h-full ${onClick ? 'cursor-pointer' : ''} cursor-grab active:cursor-grabbing group`}
     >
       <div className="flex justify-between items-start mb-2 gap-4">
-        <h3 className="text-sm font-medium text-gray-900 line-clamp-2" title={task.title}>
-          {task.title}
-        </h3>
+        <div className="flex items-start gap-2">
+          {/* Drag Handle Icon - subtle by default, darker on hover */}
+          <div className="text-gray-300 group-hover:text-gray-500 transition-colors mt-0.5" title="Drag to move">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm6-16a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4z" />
+            </svg>
+          </div>
+          <h3 className="text-sm font-medium text-gray-900 line-clamp-2" title={task.title}>
+            {task.title}
+          </h3>
+        </div>
         <div className="flex flex-col gap-1 items-end shrink-0">
           <TaskPriorityBadge priority={task.priority} />
         </div>

@@ -37,15 +37,15 @@ export default function KanbanColumn({ status, tasks, onTaskClick, onStatusChang
 
   return (
     <div 
-      className={`flex flex-col rounded-lg p-3 min-w-[280px] sm:min-w-[320px] w-full transition-colors duration-200 h-full min-h-[500px] shrink-0
-        ${isDragOver ? 'bg-gray-100 ring-2 ring-blue-400 border-transparent' : 'bg-gray-50 border border-gray-200'}`}
+      className={`flex flex-col rounded-xl p-3 w-full transition-colors duration-200 h-full min-h-[500px] shrink-0
+        ${isDragOver ? 'bg-blue-50/50 ring-2 ring-blue-400 border-transparent' : 'bg-gray-100/80 border border-gray-200/50'}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <div className="flex justify-between items-center mb-3 px-1">
-        <h3 className="font-semibold text-gray-700">{statusInfo?.label || status}</h3>
-        <span className="bg-gray-200 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full">
+      <div className="flex justify-between items-center mb-4 px-1">
+        <h3 className="font-semibold text-gray-800 text-sm tracking-wide">{statusInfo?.label || status}</h3>
+        <span className="bg-white text-gray-600 text-xs font-semibold px-2 py-0.5 rounded-full border border-gray-200 shadow-sm">
           {tasks.length}
         </span>
       </div>
@@ -60,9 +60,14 @@ export default function KanbanColumn({ status, tasks, onTaskClick, onStatusChang
           />
         ))}
         
+        {/* Invisible drop zone when empty so the whole column is a valid drop target */}
         {tasks.length === 0 && (
-          <div className={`flex-grow border-2 border-dashed rounded flex items-center justify-center p-4 transition-colors ${isDragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-200'}`}>
-            <p className="text-sm text-gray-400 pointer-events-none">Drop tasks here</p>
+          <div className="flex-grow flex flex-col items-center justify-center pointer-events-none opacity-50">
+            {isDragOver ? (
+              <p className="text-sm font-medium text-blue-500">Drop task here</p>
+            ) : (
+              <p className="text-xs font-medium text-gray-400">No tasks</p>
+            )}
           </div>
         )}
       </div>

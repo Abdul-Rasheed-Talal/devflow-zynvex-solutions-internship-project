@@ -30,9 +30,9 @@ The project has exactly four modules:
 3. Collaboration, Permissions & Analytics
 4. AI Project Health Analysis, Testing & Deployment
 
-We are currently implementing Module 1.
+We are currently implementing Module 3.
 
-Do NOT implement features belonging to Modules 2–4 unless explicitly instructed.
+Do NOT implement features belonging to Module 4 unless explicitly instructed.
 
 ## Technology constraints
 

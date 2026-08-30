@@ -5,7 +5,7 @@ Build DevFlow, a professional AI-powered project management and collaboration pl
 
 ## Non-negotiable constraints
 1. The official project is divided into exactly four modules. Do not implement later-module features early unless explicitly instructed.
-2. Module 1 is the current development target until it is explicitly marked complete.
+2. Module 3 is the current development target until it is explicitly marked complete.
 3. Use JavaScript, not TypeScript.
 4. Follow the approved MERN stack: React/Vite, JavaScript, Tailwind CSS, React Router, TanStack Query, Zustand, Node.js, Express.js, REST APIs, JWT, bcrypt, MongoDB, Mongoose.
 5. Do not add technologies or dependencies without a concrete reason and approval.
