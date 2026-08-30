@@ -68,9 +68,18 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T09 — Task Frontend Foundation
+1. M2-T10 — Assignment, Priorities, Labels & Due Dates
 
 ## Completed
+- **M2-T09 — Task Management Frontend**
+  - Created `frontend/src/types/task.ts` aligned with backend response models.
+  - Created `frontend/src/services/taskService.ts` utilizing existing `apiClient`.
+  - Created `frontend/src/hooks/useTaskQueries.ts` supporting standard `useTasks`, `useTask`, `useCreateTask`, `useUpdateTask`, and `useDeleteTask` mutations with proper invalidation.
+  - Implemented `ProjectTasksPage` under `/app/projects/:projectId/tasks` matching design conventions.
+  - Built reusable `TaskForm`, `TaskCard`, and `TaskBadges` components.
+  - Managed UI loading, empty, and error states gracefully (handling 401, 403, 404 securely).
+  - Maintained zero usage of local auth storage (pure HttpOnly cookies).
+  - Passed TypeScript compilation and Vite build with clean output.
 - **M2-T08 — Task CRUD API**
   - Implemented `GET /api/projects/:projectId/tasks` to list tasks.
   - Implemented `POST /api/projects/:projectId/tasks` to create tasks.

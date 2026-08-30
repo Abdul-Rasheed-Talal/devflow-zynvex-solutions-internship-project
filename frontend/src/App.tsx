@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProjectsPage from './pages/projects/ProjectsPage';
 import NewProjectPage from './pages/projects/NewProjectPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
+import ProjectTasksPage from './pages/tasks/ProjectTasksPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import PublicRoute from './components/auth/PublicRoute';
 import { useAuthStore } from './stores/authStore';
@@ -43,6 +44,7 @@ export default function App() {
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="projects/new" element={<NewProjectPage />} />
             <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+            <Route path="projects/:projectId/tasks" element={<ProjectTasksPage />} />
           </Route>
 
           {/* Public Authentication Routes */}
