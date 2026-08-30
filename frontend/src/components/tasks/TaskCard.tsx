@@ -1,5 +1,5 @@
 import type { Task } from '../../types/task';
-import { TaskStatusBadge, TaskPriorityBadge } from './TaskBadges';
+import { TaskStatusBadge, TaskPriorityBadge, TaskLabelBadge } from './TaskBadges';
 
 interface TaskCardProps {
   task: Task;
@@ -7,13 +7,14 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, onClick }: TaskCardProps) {
+  const isOverdue = task.dueDate && task.status !== 'done' && new Date(task.dueDate) < new Date();
   return (
     <div
       onClick={() => onClick && onClick(task)}
-      className={`bg-white border border-gray-200 rounded p-4 shadow-sm hover:shadow transition-shadow ${onClick ? 'cursor-pointer' : ''}`}
+      className={`bg-white border border-gray-200 rounded p-4 shadow-sm hover:shadow transition-shadow flex flex-col h-full ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div className="flex justify-between items-start mb-2 gap-4">
-        <h3 className="text-sm font-medium text-gray-900 truncate" title={task.title}>
+        <h3 className="text-sm font-medium text-gray-900 line-clamp-2" title={task.title}>
           {task.title}
         </h3>
         <div className="flex flex-col gap-1 items-end shrink-0">
@@ -22,16 +23,38 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
       </div>
       
       {task.description && (
-        <p className="text-xs text-gray-500 line-clamp-2 mb-3">
+        <p className="text-xs text-gray-500 line-clamp-2 mb-3 flex-grow">
           {task.description}
         </p>
       )}
 
-      <div className="flex items-center justify-between mt-4">
+      {!task.description && <div className="flex-grow"></div>}
+
+      {task.labels && task.labels.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {task.labels.map((label, idx) => (
+            <TaskLabelBadge key={`${label}-${idx}`} label={label} />
+          ))}
+        </div>
+      )}
+
+      {task.dueDate && (
+        <div className={`text-xs mb-3 flex items-center gap-1 ${isOverdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          <span title={isOverdue ? 'Overdue' : 'Due date'}>
+            {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+            {isOverdue && ' (Overdue)'}
+          </span>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
         <TaskStatusBadge status={task.status} />
         
         {task.assignee ? (
-          <div className="text-xs text-gray-600 truncate" title={task.assignee.name}>
+          <div className="text-xs text-gray-600 truncate max-w-[120px]" title={task.assignee.name}>
             {task.assignee.name}
           </div>
         ) : (

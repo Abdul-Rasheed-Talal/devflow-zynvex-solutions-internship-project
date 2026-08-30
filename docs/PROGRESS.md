@@ -68,9 +68,16 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T10 — Assignment, Priorities, Labels & Due Dates
+1. M2-T11 — Kanban Board & Drag-and-Drop
 
 ## Completed
+- **M2-T10 — Assignment, Priorities, Labels & Due Dates**
+  - Confirmed backend already supports `labels` and `dueDate` validation correctly.
+  - Enhanced `TaskForm` to support managing `labels` (comma-separated string parsed to unique array) and `dueDate`.
+  - Upgraded `TaskCard` to display label pills using a new `TaskLabelBadge`.
+  - Upgraded `TaskCard` to display `dueDate` cleanly, with an accessible visually-distinct overdue state.
+  - Re-verified assignment integration against project membership logic.
+  - Successfully validated UI responsiveness and accessibility of the new metadata fields.
 - **M2-T09 — Task Management Frontend**
   - Created `frontend/src/types/task.ts` aligned with backend response models.
   - Created `frontend/src/services/taskService.ts` utilizing existing `apiClient`.
