@@ -68,9 +68,17 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T07 — Task Database Model & Backend Foundation
+1. M2-T08 — Task CRUD API
 
 ## Completed
+- **M2-T07 — Task Database Model & Backend Foundation**
+  - Created `backend/models/Task.js` schema based on Module 2 spec.
+  - Implemented `project` (ObjectId, ref: Project, required, indexed), `creator` (ObjectId, ref: User, required), and `title` (required, max 200).
+  - Configured Enums and defaults for `status` (todo, in_progress, review, done) and `priority` (low, medium, high, urgent).
+  - Added optional fields `description`, `assignee` (ObjectId, ref: User, indexed), `labels` (array of strings), and `dueDate` (Date).
+  - Added `timestamps: true`.
+  - Added test suite `backend/test_task.js` covering model validations with 29 passing assertions.
+  - Verified no side effects on existing auth, project, or member APIs (all 74 regression tests passing).
 - **M2-T06 — Project Membership Frontend**
   - Extended `src/types/project.ts` with `ProjectMember`, `ProjectMemberListResponse`, and `AddMemberInput` types.
   - Extended `src/services/projectService.ts` with `getMembers`, `addMember`, and `removeMember` methods.
