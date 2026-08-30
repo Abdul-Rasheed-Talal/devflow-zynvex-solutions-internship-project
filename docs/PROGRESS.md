@@ -4,7 +4,7 @@
 Module 3 — Collaboration, Permissions & Analytics
 
 ## Status
-Module 2 complete. Module 3 planned next.
+Module 3 specification complete. Proceeding to RBAC foundation.
 
 ## Completed
 - Project scope documented.
@@ -68,9 +68,18 @@ Module 2 complete. Module 3 planned next.
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. Module 3 — (Next planned module)
+1. M3-T02 — RBAC & Membership Schema Migration
 
 ## Completed
+- **M3-T01 — Specification & Architecture**
+  - Analyzed Module 2 architecture to establish RBAC requirements.
+  - Defined explicit roles: Owner, Admin, Member, Viewer with strict permission boundaries.
+  - Designed backend schema updates (modifying `Project.members` structure).
+  - Drafted models for Comments, Notifications, Activity, and AuditLogs.
+  - Architected real-time Socket.IO synchronization pattern preserving REST auth authority.
+  - Documented strict API contract and WebSocket event structure.
+  - Formulated migration strategy for existing Module 2 project data.
+  - Verified no UI/backend code modifications occurred during the design phase.
 - **M2-T12 — Module 2 Integration, Testing & Hardening**
   - Conducted full specification and API audit against `MODULE_2.md` and `API_SPEC.md`.
   - Verified authorization constraints (owner vs. member vs. unrelated) across all project, member, and task resources.
