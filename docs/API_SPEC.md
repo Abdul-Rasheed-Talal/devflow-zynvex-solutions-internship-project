@@ -146,6 +146,43 @@ All project endpoints require authentication via the `devflow_access_token` Http
   - Project does not exist: `404`.
   - Not the owner: `403`.
 
+### Project Membership
+
+**GET /api/projects/:projectId/members**
+- **Purpose**: Get the list of project members.
+- **Authentication**: Required.
+- **Authorization**: Owner only.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...] }` where each item is a safe user representation. Does not expose password hashes.
+- **Error Behavior**:
+  - Invalid ObjectId: `400`.
+  - Project does not exist: `404`.
+  - Not the owner: `403`.
+
+**POST /api/projects/:projectId/members**
+- **Purpose**: Add a user to a project.
+- **Authentication**: Required.
+- **Authorization**: Owner only.
+- **Request Body**: `{ "userId": "<user_id>" }`
+- **Response (Success)**: `200 OK`. Returns the updated project.
+- **Error Behavior**:
+  - Invalid project/user ID: `400`.
+  - Project/user does not exist: `404`.
+  - Not the owner: `403`.
+  - Attempting to add the owner: `400`.
+  - User is already a member: `409`.
+
+**DELETE /api/projects/:projectId/members/:userId**
+- **Purpose**: Remove a user from a project.
+- **Authentication**: Required.
+- **Authorization**: Owner only.
+- **Response (Success)**: `200 OK`. Returns the updated project.
+- **Error Behavior**:
+  - Invalid project/user ID: `400`.
+  - Project does not exist: `404`.
+  - Not the owner: `403`.
+  - Attempting to remove the owner: `400`.
+  - User is not a member: `404`.
+
 ## API rules
 - JSON request/response.
 - Consistent success/error structure.

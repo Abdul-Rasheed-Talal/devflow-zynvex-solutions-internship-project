@@ -5,6 +5,9 @@ import {
   getProject,
   updateProject,
   deleteProject,
+  getProjectMembers,
+  addProjectMember,
+  removeProjectMember,
 } from '../controllers/projectController.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -37,5 +40,20 @@ router.patch('/:projectId', updateProject);
 // @desc    Delete a project
 // @access  Private (owner only)
 router.delete('/:projectId', deleteProject);
+
+// @route   GET /api/projects/:projectId/members
+// @desc    Get project members
+// @access  Private (owner only)
+router.get('/:projectId/members', getProjectMembers);
+
+// @route   POST /api/projects/:projectId/members
+// @desc    Add a project member
+// @access  Private (owner only)
+router.post('/:projectId/members', addProjectMember);
+
+// @route   DELETE /api/projects/:projectId/members/:userId
+// @desc    Remove a project member
+// @access  Private (owner only)
+router.delete('/:projectId/members/:userId', removeProjectMember);
 
 export default router;

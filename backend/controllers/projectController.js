@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Project from '../models/Project.js';
+import User from '../models/User.js';
 
 /**
  * Check whether a user can access a project (owner or member).
@@ -227,6 +228,174 @@ export const deleteProject = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: 'Project deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get project members
+ * @route   GET /api/projects/:projectId/members
+ * @access  Private (owner only)
+ */
+export const getProjectMembers = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+
+    if (!isValidObjectId(projectId)) {
+      const err = new Error('Invalid project ID');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    const project = await Project.findById(projectId).populate('members');
+
+    if (!project) {
+      const err = new Error('Project not found');
+      err.statusCode = 404;
+      return next(err);
+    }
+
+    if (!isProjectOwner(project, req.user.id)) {
+      const err = new Error('Only the project owner can manage membership');
+      err.statusCode = 403;
+      return next(err);
+    }
+
+    const safeMembers = project.members.map((member) => member.toSafeObject());
+
+    res.status(200).json({
+      success: true,
+      data: safeMembers,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Add a project member
+ * @route   POST /api/projects/:projectId/members
+ * @access  Private (owner only)
+ */
+export const addProjectMember = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+    const { userId } = req.body;
+
+    if (!isValidObjectId(projectId)) {
+      const err = new Error('Invalid project ID');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    if (!userId || !isValidObjectId(userId)) {
+      const err = new Error('Invalid user ID');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      const err = new Error('Project not found');
+      err.statusCode = 404;
+      return next(err);
+    }
+
+    if (!isProjectOwner(project, req.user.id)) {
+      const err = new Error('Only the project owner can manage membership');
+      err.statusCode = 403;
+      return next(err);
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error('User not found');
+      err.statusCode = 404;
+      return next(err);
+    }
+
+    if (project.owner.toString() === userId.toString()) {
+      const err = new Error('Project owner cannot be added as a member');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    const isAlreadyMember = project.members.some((m) => m.toString() === userId.toString());
+    if (isAlreadyMember) {
+      const err = new Error('User is already a member');
+      err.statusCode = 409;
+      return next(err);
+    }
+
+    project.members.push(userId);
+    await project.save();
+
+    res.status(200).json({
+      success: true,
+      data: project,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Remove a project member
+ * @route   DELETE /api/projects/:projectId/members/:userId
+ * @access  Private (owner only)
+ */
+export const removeProjectMember = async (req, res, next) => {
+  try {
+    const { projectId, userId } = req.params;
+
+    if (!isValidObjectId(projectId)) {
+      const err = new Error('Invalid project ID');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    if (!isValidObjectId(userId)) {
+      const err = new Error('Invalid user ID');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+      const err = new Error('Project not found');
+      err.statusCode = 404;
+      return next(err);
+    }
+
+    if (!isProjectOwner(project, req.user.id)) {
+      const err = new Error('Only the project owner can manage membership');
+      err.statusCode = 403;
+      return next(err);
+    }
+
+    if (project.owner.toString() === userId.toString()) {
+      const err = new Error('Project owner cannot be removed as a member');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    const isMember = project.members.some((m) => m.toString() === userId.toString());
+    if (!isMember) {
+      const err = new Error('User is not a member of this project');
+      err.statusCode = 404;
+      return next(err);
+    }
+
+    project.members = project.members.filter((m) => m.toString() !== userId.toString());
+    await project.save();
+
+    res.status(200).json({
+      success: true,
+      data: project,
     });
   } catch (error) {
     next(error);

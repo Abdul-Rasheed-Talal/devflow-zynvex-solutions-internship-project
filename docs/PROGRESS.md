@@ -68,9 +68,19 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T05 — Project Membership Backend
+1. M2-T06 — Project Kanban/Task Backend
 
 ## Completed
+- **M2-T05 — Project Membership Backend/API**
+  - Added `getProjectMembers`, `addProjectMember`, and `removeProjectMember` to `backend/controllers/projectController.js`.
+  - Added corresponding routes to `backend/routes/projects.js` (`GET/POST /api/projects/:projectId/members`, `DELETE /api/projects/:projectId/members/:userId`).
+  - Enforced strict owner-only authorization across all membership endpoints.
+  - Implemented safe user data filtering, preventing exposure of `passwordHash` or sensitive internal data when viewing members.
+  - Implemented duplicate membership protection (returning `409 Conflict`).
+  - Validated that target users exist before addition (returning `404 Not Found` otherwise).
+  - Prevented project owners from mistakenly adding or removing themselves as members.
+  - Developed a comprehensive membership test suite (`backend/test_project_members.js`) with 27 tests checking auth, authorization, duplication, validation, and safe data boundaries.
+  - All 27 tests passed. Auth and Project CRUD regression tests all passed.
 - **M2-T04 — Project Management Frontend**
   - Created strongly typed `Project` and API payload interfaces in `src/types/project.ts`.
   - Implemented `projectService.ts` wrapping `apiClient` for all CRUD endpoints.
