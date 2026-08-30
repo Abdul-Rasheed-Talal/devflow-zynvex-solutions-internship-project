@@ -68,9 +68,19 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T08 — Task CRUD API
+1. M2-T09 — Task Frontend Foundation
 
 ## Completed
+- **M2-T08 — Task CRUD API**
+  - Implemented `GET /api/projects/:projectId/tasks` to list tasks.
+  - Implemented `POST /api/projects/:projectId/tasks` to create tasks.
+  - Implemented `GET /api/tasks/:taskId` to retrieve single task.
+  - Implemented `PATCH /api/tasks/:taskId` to update task.
+  - Implemented `DELETE /api/tasks/:taskId` to delete task.
+  - Enforced project owner/member access controls on all endpoints.
+  - Enforced mass assignment protections (client cannot change `project` or `creator`).
+  - Added test suite `backend/test_tasks.js` with 54 passing assertions.
+  - Verified stability with existing auth, project, and members tests.
 - **M2-T07 — Task Database Model & Backend Foundation**
   - Created `backend/models/Task.js` schema based on Module 2 spec.
   - Implemented `project` (ObjectId, ref: Project, required, indexed), `creator` (ObjectId, ref: User, required), and `title` (required, max 200).

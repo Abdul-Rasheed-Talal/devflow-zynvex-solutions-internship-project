@@ -9,6 +9,10 @@ import {
   addProjectMember,
   removeProjectMember,
 } from '../controllers/projectController.js';
+import {
+  getProjectTasks,
+  createTask,
+} from '../controllers/taskController.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -55,5 +59,19 @@ router.post('/:projectId/members', addProjectMember);
 // @desc    Remove a project member
 // @access  Private (owner only)
 router.delete('/:projectId/members/:userId', removeProjectMember);
+
+// ==========================================
+// Nested Task Routes
+// ==========================================
+
+// @route   GET /api/projects/:projectId/tasks
+// @desc    Get all tasks for a specific project
+// @access  Private (project owner or member)
+router.get('/:projectId/tasks', getProjectTasks);
+
+// @route   POST /api/projects/:projectId/tasks
+// @desc    Create a new task in a project
+// @access  Private (project owner or member)
+router.post('/:projectId/tasks', createTask);
 
 export default router;

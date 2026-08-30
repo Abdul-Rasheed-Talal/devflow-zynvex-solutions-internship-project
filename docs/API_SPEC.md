@@ -183,6 +183,63 @@ All project endpoints require authentication via the `devflow_access_token` Http
   - Attempting to remove the owner: `400`.
   - User is not a member: `404`.
 
+## Tasks
+
+**GET /api/projects/:projectId/tasks**
+- **Purpose**: Get all tasks for a specific project.
+- **Authentication**: Required.
+- **Authorization**: Project owner or member.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...] }` containing task objects populated with safe creator and assignee fields.
+- **Error Behavior**:
+  - Invalid project ID: `400`.
+  - Project not found: `404`.
+  - Not an owner or member: `403`.
+
+**POST /api/projects/:projectId/tasks**
+- **Purpose**: Create a new task within a project.
+- **Authentication**: Required.
+- **Authorization**: Project owner or member.
+- **Request Body**: `{ "title": "...", "description": "...", "status": "todo", "priority": "medium", "assignee": "...", "labels": ["...", "..."], "dueDate": "..." }`
+- **Response (Success)**: `201 Created`. Returns `{ "success": true, "data": { ... } }` containing the new task.
+- **Error Behavior**:
+  - Invalid project ID: `400`.
+  - Project not found: `404`.
+  - Not an owner or member: `403`.
+  - Validation errors (missing title, invalid enum, etc.): `400`.
+  - Invalid assignee or assignee outside project: `400`/`403`/`404`.
+
+**GET /api/tasks/:taskId**
+- **Purpose**: Retrieve a single task.
+- **Authentication**: Required.
+- **Authorization**: Project owner or member of the parent project.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": { ... } }`.
+- **Error Behavior**:
+  - Invalid task ID: `400`.
+  - Task not found: `404`.
+  - Not an owner or member of the parent project: `403`.
+
+**PATCH /api/tasks/:taskId**
+- **Purpose**: Update an existing task.
+- **Authentication**: Required.
+- **Authorization**: Project owner or member of the parent project.
+- **Request Body**: Allowed fields: `title`, `description`, `status`, `priority`, `assignee`, `labels`, `dueDate`.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": { ... } }` containing the updated task.
+- **Error Behavior**:
+  - Invalid task ID: `400`.
+  - Task not found: `404`.
+  - Not an owner or member: `403`.
+  - Validation errors: `400`.
+
+**DELETE /api/tasks/:taskId**
+- **Purpose**: Delete a task.
+- **Authentication**: Required.
+- **Authorization**: Project owner or member of the parent project.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": {} }`.
+- **Error Behavior**:
+  - Invalid task ID: `400`.
+  - Task not found: `404`.
+  - Not an owner or member: `403`.
+
 ## API rules
 - JSON request/response.
 - Consistent success/error structure.
