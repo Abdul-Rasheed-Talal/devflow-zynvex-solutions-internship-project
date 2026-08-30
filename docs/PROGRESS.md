@@ -68,9 +68,15 @@ Module 1 complete. Module 2 in progress. Project CRUD API implemented and verifi
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M2-T11 — Kanban Board & Drag-and-Drop
+1. M2-T12 — (Next Module 2 Task)
 
 ## Completed
+- **M2-T11 — Kanban Board & Persisted Drag-and-Drop**
+  - Designed and deployed `KanbanBoard` and `KanbanColumn` architecture.
+  - Implemented lightweight native HTML5 Drag-and-Drop API without pulling in heavy external packages.
+  - Augmented `TaskCard` with an accessible status dropdown enabling keyboard users to seamlessly toggle status.
+  - Set up TanStack Query cache optimistic updates enabling lag-free board interactions, complete with snapshot rollback functionality if the API fails.
+  - Verified mobile responsive scroll boundaries and visual loading skeletons.
 - **M2-T10 — Assignment, Priorities, Labels & Due Dates**
   - Confirmed backend already supports `labels` and `dueDate` validation correctly.
   - Enhanced `TaskForm` to support managing `labels` (comma-separated string parsed to unique array) and `dueDate`.

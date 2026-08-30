@@ -1,17 +1,47 @@
-import type { Task } from '../../types/task';
+import React from 'react';
+import type { Task, TaskStatus } from '../../types/task';
+import { TASK_STATUSES } from '../../types/task';
 import { TaskStatusBadge, TaskPriorityBadge, TaskLabelBadge } from './TaskBadges';
 
 interface TaskCardProps {
   task: Task;
   onClick?: (task: Task) => void;
+  onStatusChange?: (taskId: string, newStatus: TaskStatus) => void;
 }
 
-export default function TaskCard({ task, onClick }: TaskCardProps) {
+export default function TaskCard({ task, onClick, onStatusChange }: TaskCardProps) {
   const isOverdue = task.dueDate && task.status !== 'done' && new Date(task.dueDate) < new Date();
+
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('taskId', task._id);
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => {
+      if (e.target instanceof HTMLElement) {
+        e.target.style.opacity = '0.5';
+      }
+    }, 0);
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    if (e.target instanceof HTMLElement) {
+      e.target.style.opacity = '1';
+    }
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.stopPropagation();
+    if (onStatusChange) {
+      onStatusChange(task._id, e.target.value as TaskStatus);
+    }
+  };
+
   return (
     <div
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onClick={() => onClick && onClick(task)}
-      className={`bg-white border border-gray-200 rounded p-4 shadow-sm hover:shadow transition-shadow flex flex-col h-full ${onClick ? 'cursor-pointer' : ''}`}
+      className={`bg-white border border-gray-200 rounded p-4 shadow-sm hover:shadow transition-shadow flex flex-col h-full ${onClick ? 'cursor-pointer' : ''} cursor-grab active:cursor-grabbing`}
     >
       <div className="flex justify-between items-start mb-2 gap-4">
         <h3 className="text-sm font-medium text-gray-900 line-clamp-2" title={task.title}>
@@ -51,7 +81,26 @@ export default function TaskCard({ task, onClick }: TaskCardProps) {
       )}
 
       <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-        <TaskStatusBadge status={task.status} />
+        {onStatusChange ? (
+          <select
+            value={task.status}
+            onChange={handleStatusChange}
+            onClick={(e) => e.stopPropagation()}
+            className="text-xs font-medium bg-gray-50 border border-gray-300 hover:border-gray-400 text-gray-700 rounded-full px-2 py-1 pr-6 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer"
+            style={{
+               backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+               backgroundPosition: `right 0.2rem center`,
+               backgroundRepeat: `no-repeat`,
+               backgroundSize: `1.2em 1.2em`
+            }}
+          >
+            {TASK_STATUSES.map(s => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+        ) : (
+          <TaskStatusBadge status={task.status} />
+        )}
         
         {task.assignee ? (
           <div className="text-xs text-gray-600 truncate max-w-[120px]" title={task.assignee.name}>

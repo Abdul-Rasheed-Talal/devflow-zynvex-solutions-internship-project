@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '../../hooks/useTaskQueries';
 import { useProject, useProjectMembers } from '../../hooks/useProjectQueries';
-import TaskCard from '../../components/tasks/TaskCard';
+import KanbanBoard from '../../components/tasks/KanbanBoard';
 import TaskForm from '../../components/tasks/TaskForm';
 import type { Task, CreateTaskInput, UpdateTaskInput } from '../../types/task';
 import type { ApiError } from '../../types/auth';
@@ -11,7 +11,7 @@ export default function ProjectTasksPage() {
   const { projectId } = useParams<{ projectId: string }>();
 
   const { data: project, isLoading: isProjectLoading, error: projectError } = useProject(projectId!);
-  const { data: membersResponse } = useProjectMembers(projectId!);
+  const { data: membersResponse } = useProjectMembers(projectId!, true);
   const { data: tasks, isLoading: isTasksLoading, error: tasksError } = useTasks(projectId!);
 
   const createMutation = useCreateTask(projectId!);
@@ -24,7 +24,7 @@ export default function ProjectTasksPage() {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const projectMembers = membersResponse?.data || [];
+  const projectMembers = membersResponse || [];
 
   const handleCreate = (data: CreateTaskInput | UpdateTaskInput) => {
     setApiError(null);
@@ -90,9 +90,18 @@ export default function ProjectTasksPage() {
     return (
       <div className="space-y-6">
         <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
-        <div className="bg-white border border-gray-200 rounded p-6 space-y-4">
-          <div className="h-7 w-64 bg-gray-200 rounded animate-pulse" />
-          <div className="h-4 w-96 bg-gray-100 rounded animate-pulse" />
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+          <div className="h-9 w-28 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-4 pt-1 h-[600px]">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex-1 min-w-[280px] sm:min-w-[320px] bg-gray-50 rounded-lg p-3 space-y-3">
+              <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
+              <div className="h-32 bg-white rounded border border-gray-200 animate-pulse" />
+              <div className="h-24 bg-white rounded border border-gray-200 animate-pulse" />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -127,7 +136,7 @@ export default function ProjectTasksPage() {
   if (!project) return null;
 
   return (
-    <div className="space-y-6 relative">
+    <div className="flex flex-col h-full space-y-6 relative">
       <div className="flex items-center justify-between">
         <div>
           <Link to={`/app/projects/${projectId}`} className="text-sm text-blue-600 hover:text-blue-800">
@@ -180,28 +189,25 @@ export default function ProjectTasksPage() {
             onCancel={() => setEditingTask(null)}
           />
         </div>
+      ) : tasks && tasks.length > 0 ? (
+        <div className="flex-grow min-h-0 pb-4">
+          <KanbanBoard
+            projectId={projectId!}
+            tasks={tasks}
+            onTaskClick={setEditingTask}
+            onError={setApiError}
+          />
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tasks && tasks.length > 0 ? (
-            tasks.map((task) => (
-              <TaskCard
-                key={task._id}
-                task={task}
-                onClick={setEditingTask}
-              />
-            ))
-          ) : (
-            <div className="col-span-full bg-white border border-gray-200 rounded p-8 text-center">
-              <h3 className="text-sm font-medium text-gray-900">No tasks</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by creating a new task.</p>
-              <button
-                onClick={() => setIsCreating(true)}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700"
-              >
-                Create Task
-              </button>
-            </div>
-          )}
+        <div className="bg-white border border-gray-200 rounded p-8 text-center mt-6">
+          <h3 className="text-sm font-medium text-gray-900">No tasks yet</h3>
+          <p className="mt-1 text-sm text-gray-500">Create your first task to start organizing this project.</p>
+          <button
+            onClick={() => setIsCreating(true)}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700"
+          >
+            Create Task
+          </button>
         </div>
       )}
 

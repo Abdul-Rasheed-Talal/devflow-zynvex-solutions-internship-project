@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { taskService } from '../services/taskService';
-import type { CreateTaskInput, UpdateTaskInput } from '../types/task';
+import type { CreateTaskInput, UpdateTaskInput, Task } from '../types/task';
 
 export const taskKeys = {
   all: ['tasks'] as const,
@@ -41,7 +41,30 @@ export function useUpdateTask(projectId: string) {
   return useMutation({
     mutationFn: ({ taskId, input }: { taskId: string; input: UpdateTaskInput }) => 
       taskService.updateTask(taskId, input),
-    onSuccess: (_, variables) => {
+    onMutate: async ({ taskId, input }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: taskKeys.project(projectId) });
+
+      // Snapshot the previous tasks
+      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.project(projectId));
+
+      // Optimistically update
+      if (previousTasks && input.status) {
+        queryClient.setQueryData<Task[]>(taskKeys.project(projectId), old => {
+          return old?.map(task =>
+            task._id === taskId ? { ...task, status: input.status! } : task
+          );
+        });
+      }
+
+      return { previousTasks };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(taskKeys.project(projectId), context.previousTasks);
+      }
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.detail(variables.taskId) });
       queryClient.invalidateQueries({ queryKey: taskKeys.project(projectId) });
     },
