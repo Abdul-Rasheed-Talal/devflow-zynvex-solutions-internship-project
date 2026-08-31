@@ -5,6 +5,7 @@ import { StatusBadge, PriorityBadge } from '../../components/projects/ProjectBad
 import ProjectForm from '../../components/projects/ProjectForm';
 import ProjectMembers from '../../components/projects/ProjectMembers';
 import { useAuthStore } from '../../stores/authStore';
+import { getProjectRole, canEditProject, canDeleteProject } from '../../lib/permissions';
 import type { UpdateProjectInput } from '../../types/project';
 import type { ApiError } from '../../types/auth';
 
@@ -40,7 +41,9 @@ export default function ProjectDetailPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const isOwner = project && user ? project.owner === user.id : false;
+  const userRole = getProjectRole(project, user?.id);
+  const hasEditPermission = canEditProject(userRole);
+  const hasDeletePermission = canDeleteProject(userRole);
 
   // Loading state
   if (isLoading) {
@@ -220,21 +223,25 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        {/* Actions — only shown if the user is the project owner */}
-        {isOwner && (
+        {/* Actions — based on role permissions */}
+        {(hasEditPermission || hasDeletePermission) && (
           <div className="mt-6 pt-4 border-t border-gray-200 flex items-center gap-3">
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Edit project
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="px-3 py-1.5 bg-white text-red-600 text-sm font-medium rounded border border-gray-300 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            >
-              Delete project
-            </button>
+            {hasEditPermission && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Edit project
+              </button>
+            )}
+            {hasDeletePermission && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-3 py-1.5 bg-white text-red-600 text-sm font-medium rounded border border-gray-300 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              >
+                Delete project
+              </button>
+            )}
           </div>
         )}
 
@@ -249,10 +256,9 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Team members section */}
       <ProjectMembers
         projectId={projectId!}
-        isOwner={isOwner}
+        currentUserRole={userRole}
         ownerId={project.owner}
       />
 

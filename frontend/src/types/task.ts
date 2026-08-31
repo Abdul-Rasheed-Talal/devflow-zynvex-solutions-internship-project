@@ -1,4 +1,4 @@
-import { ProjectMember } from './project';
+import type { UserBasic } from './project';
 
 export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -6,12 +6,12 @@ export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export interface Task {
   _id: string;
   project: string;
-  creator: ProjectMember; // Populated by backend safely
+  creator: UserBasic; // Populated by backend safely
   title: string;
   description?: string;
   status: TaskStatus;
   priority: TaskPriority;
-  assignee?: ProjectMember | null; // Populated by backend safely
+  assignee?: UserBasic | null; // Populated by backend safely
   labels: string[];
   dueDate?: string;
   createdAt: string;

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectService } from '../services/projectService';
-import type { CreateProjectInput, UpdateProjectInput, AddMemberInput } from '../types/project';
+import type { CreateProjectInput, UpdateProjectInput, AddMemberInput, UpdateMemberRoleInput } from '../types/project';
 
 // Query key factory
 export const projectKeys = {
@@ -62,7 +62,7 @@ export function useDeleteProject() {
   });
 }
 
-/** Fetch project members (owner only) */
+/** Fetch project members (viewer or higher) */
 export function useProjectMembers(projectId: string, enabled: boolean) {
   return useQuery({
     queryKey: projectKeys.members(projectId),
@@ -89,6 +89,19 @@ export function useRemoveMember(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => projectService.removeMember(projectId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectKeys.members(projectId) });
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+    },
+  });
+}
+
+/** Update a member's role in a project */
+export function useUpdateMemberRole(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: UpdateMemberRoleInput }) => 
+      projectService.updateMemberRole(projectId, userId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: projectKeys.members(projectId) });
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });

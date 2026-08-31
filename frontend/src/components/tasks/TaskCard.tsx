@@ -7,12 +7,14 @@ interface TaskCardProps {
   task: Task;
   onClick?: (task: Task) => void;
   onStatusChange?: (taskId: string, newStatus: TaskStatus) => void;
+  readOnly?: boolean;
 }
 
-export default function TaskCard({ task, onClick, onStatusChange }: TaskCardProps) {
+export default function TaskCard({ task, onClick, onStatusChange, readOnly = false }: TaskCardProps) {
   const isOverdue = task.dueDate && task.status !== 'done' && new Date(task.dueDate) < new Date();
 
   const handleDragStart = (e: React.DragEvent) => {
+    if (readOnly) return;
     e.dataTransfer.setData('taskId', task._id);
     e.dataTransfer.effectAllowed = 'move';
     setTimeout(() => {
@@ -47,20 +49,22 @@ export default function TaskCard({ task, onClick, onStatusChange }: TaskCardProp
 
   return (
     <div
-      draggable
+      draggable={!readOnly}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={() => onClick && onClick(task)}
-      className={`bg-white border-y border-r border-l-4 border-y-gray-200 border-r-gray-200 ${getStatusColor(task.status)} rounded-lg p-4 shadow-sm hover:shadow-md transition-all flex flex-col h-full ${onClick ? 'cursor-pointer' : ''} cursor-grab active:cursor-grabbing group`}
+      className={`bg-white border-y border-r border-l-4 border-y-gray-200 border-r-gray-200 ${getStatusColor(task.status)} rounded-lg p-4 shadow-sm hover:shadow-md transition-all flex flex-col h-full ${onClick ? 'cursor-pointer' : ''} ${!readOnly ? 'cursor-grab active:cursor-grabbing group' : ''}`}
     >
       <div className="flex justify-between items-start mb-2 gap-4">
         <div className="flex items-start gap-2">
           {/* Drag Handle Icon - subtle by default, darker on hover */}
-          <div className="text-gray-300 group-hover:text-gray-500 transition-colors mt-0.5" title="Drag to move">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm6-16a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4z" />
-            </svg>
-          </div>
+          {!readOnly && (
+            <div className="text-gray-300 group-hover:text-gray-500 transition-colors mt-0.5" title="Drag to move">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm6-16a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4zm0 8a2 2 0 100-4 2 2 0 000 4z" />
+              </svg>
+            </div>
+          )}
           <h3 className="text-sm font-medium text-gray-900 line-clamp-2" title={task.title}>
             {task.title}
           </h3>
@@ -99,7 +103,7 @@ export default function TaskCard({ task, onClick, onStatusChange }: TaskCardProp
       )}
 
       <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-        {onStatusChange ? (
+        {!readOnly && onStatusChange ? (
           <select
             value={task.status}
             onChange={handleStatusChange}

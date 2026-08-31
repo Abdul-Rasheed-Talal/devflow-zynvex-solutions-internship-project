@@ -169,10 +169,17 @@ export const getProjectMembers = async (req, res, next) => {
     const project = await Project.findById(req.project._id).populate('members.user');
 
     const safeMembers = project.members.map((member) => {
+      let safeUser = {};
       if (!member.user) {
-        return member.toSafeObject ? member.toSafeObject() : member;
+        safeUser = member.toSafeObject ? member.toSafeObject() : member;
+      } else {
+        safeUser = member.user.toSafeObject ? member.user.toSafeObject() : member.user;
       }
-      return member.user.toSafeObject ? member.user.toSafeObject() : member.user;
+      return {
+        user: safeUser,
+        role: member.role || 'member',
+        addedAt: member.addedAt
+      };
     });
 
     res.status(200).json({

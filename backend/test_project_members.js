@@ -174,8 +174,9 @@ async function testGetMembers() {
   assert(r.body.data.length === 1, 'Member list contains the new member exactly once');
   
   const fetchedMember = r.body.data[0];
-  assert(fetchedMember.id === memberUserId, 'Returns correct member');
-  assert(fetchedMember.passwordHash === undefined, 'Sensitive User fields are not exposed');
+  assert(fetchedMember.user.id === memberUserId, 'Returns correct member');
+  assert(fetchedMember.user.passwordHash === undefined, 'Sensitive User fields are not exposed');
+  assert(fetchedMember.role === 'member', 'Returns correct role');
 
   // Invalid projectId
   r = await req(`${BASE}/projects/not-an-id/members`, 'GET', null, ownerCookie);
@@ -222,7 +223,7 @@ async function testDeleteMember() {
 
   // Verify other member intact
   r = await req(`${BASE}/projects/${createdProjectId}/members`, 'GET', null, ownerCookie);
-  assert(r.body.data.length === 1 && r.body.data[0].id === unrelatedUserId, 'Removing one member leaves other members intact');
+  assert(r.body.data.length === 1 && r.body.data[0].user.id === unrelatedUserId, 'Removing one member leaves other members intact');
 }
 
 async function run() {

@@ -9,24 +9,28 @@ interface KanbanColumnProps {
   onTaskClick: (task: Task) => void;
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void;
   onDrop: (taskId: string, status: TaskStatus) => void;
+  readOnly?: boolean;
 }
 
-export default function KanbanColumn({ status, tasks, onTaskClick, onStatusChange, onDrop }: KanbanColumnProps) {
+export default function KanbanColumn({ status, tasks, onTaskClick, onStatusChange, onDrop, readOnly = false }: KanbanColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const statusInfo = TASK_STATUSES.find(s => s.value === status);
   
   const handleDragOver = (e: React.DragEvent) => {
+    if (readOnly) return;
     e.preventDefault(); // allow drop
     if (!isDragOver) setIsDragOver(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
+    if (readOnly) return;
     e.preventDefault();
     if (e.currentTarget.contains(e.relatedTarget as Node)) return;
     setIsDragOver(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    if (readOnly) return;
     e.preventDefault();
     setIsDragOver(false);
     const taskId = e.dataTransfer.getData('taskId');
@@ -57,6 +61,7 @@ export default function KanbanColumn({ status, tasks, onTaskClick, onStatusChang
             task={task} 
             onClick={onTaskClick}
             onStatusChange={onStatusChange}
+            readOnly={readOnly}
           />
         ))}
         

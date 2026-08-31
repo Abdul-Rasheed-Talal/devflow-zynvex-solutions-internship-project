@@ -8,7 +8,7 @@ export interface Project {
   name: string;
   description?: string;
   owner: string;
-  members: string[];
+  members: ProjectMemberRef[];
   status: ProjectStatus;
   priority: ProjectPriority;
   startDate?: string;
@@ -66,12 +66,26 @@ export const PROJECT_PRIORITIES: { value: ProjectPriority; label: string }[] = [
 ];
 
 // Membership types matching the backend toSafeObject() response
-export interface ProjectMember {
+export type ProjectRole = 'owner' | 'admin' | 'member' | 'viewer';
+
+export interface UserBasic {
   id: string;
   name: string;
   email: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProjectMemberRef {
+  user: string;
+  role: ProjectRole;
+  addedAt: string;
+}
+
+export interface ProjectMember {
+  user: UserBasic;
+  role: ProjectRole;
+  addedAt: string;
 }
 
 export interface ProjectMemberListResponse {
@@ -81,4 +95,8 @@ export interface ProjectMemberListResponse {
 
 export interface AddMemberInput {
   userId: string;
+}
+
+export interface UpdateMemberRoleInput {
+  role: ProjectRole;
 }

@@ -7,6 +7,7 @@ import type {
   UpdateProjectInput,
   ProjectMemberListResponse,
   AddMemberInput,
+  UpdateMemberRoleInput,
 } from '../types/project';
 
 /**
@@ -64,6 +65,13 @@ export const projectService = {
   removeMember: (projectId: string, userId: string): Promise<ProjectResponse> => {
     return apiClient<ProjectResponse>(`/projects/${projectId}/members/${userId}`, {
       method: 'DELETE',
+    });
+  },
+
+  updateMemberRole: (projectId: string, userId: string, data: UpdateMemberRoleInput): Promise<ProjectResponse> => {
+    return apiClient<ProjectResponse>(`/projects/${projectId}/members/${userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
     });
   },
 };

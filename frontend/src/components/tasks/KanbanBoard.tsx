@@ -10,9 +10,10 @@ interface KanbanBoardProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
   onError: (msg: string) => void;
+  readOnly?: boolean;
 }
 
-export default function KanbanBoard({ projectId, tasks, onTaskClick, onError }: KanbanBoardProps) {
+export default function KanbanBoard({ projectId, tasks, onTaskClick, onError, readOnly = false }: KanbanBoardProps) {
   const updateMutation = useUpdateTask(projectId);
 
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
@@ -65,6 +66,7 @@ export default function KanbanBoard({ projectId, tasks, onTaskClick, onError }: 
             onTaskClick={onTaskClick}
             onStatusChange={handleStatusChange}
             onDrop={handleStatusChange}
+            readOnly={readOnly}
           />
         </div>
       ))}

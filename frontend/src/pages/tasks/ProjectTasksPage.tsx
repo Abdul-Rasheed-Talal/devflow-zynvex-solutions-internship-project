@@ -4,11 +4,14 @@ import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '../../hoo
 import { useProject, useProjectMembers } from '../../hooks/useProjectQueries';
 import KanbanBoard from '../../components/tasks/KanbanBoard';
 import TaskForm from '../../components/tasks/TaskForm';
+import { getProjectRole, canEditTasks } from '../../lib/permissions';
+import { useAuthStore } from '../../stores/authStore';
 import type { Task, CreateTaskInput, UpdateTaskInput } from '../../types/task';
 import type { ApiError } from '../../types/auth';
 
 export default function ProjectTasksPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const { user } = useAuthStore();
 
   const { data: project, isLoading: isProjectLoading, error: projectError } = useProject(projectId!);
   const { data: membersResponse } = useProjectMembers(projectId!, true);
@@ -25,6 +28,8 @@ export default function ProjectTasksPage() {
   const [apiError, setApiError] = useState<string | null>(null);
 
   const projectMembers = membersResponse || [];
+  const userRole = getProjectRole(project, user?.id);
+  const hasTaskEditPermission = canEditTasks(userRole);
 
   const handleCreate = (data: CreateTaskInput | UpdateTaskInput) => {
     setApiError(null);
@@ -144,7 +149,7 @@ export default function ProjectTasksPage() {
           </Link>
           <h1 className="text-2xl font-semibold text-gray-900 mt-2">Tasks</h1>
         </div>
-        {!isCreating && !editingTask && (
+        {hasTaskEditPermission && !isCreating && !editingTask && (
           <button
             onClick={() => setIsCreating(true)}
             className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -173,13 +178,17 @@ export default function ProjectTasksPage() {
       ) : editingTask ? (
         <div className="bg-white border border-gray-200 rounded p-6 max-w-2xl">
           <div className="flex justify-between items-start mb-4">
-            <h2 className="text-lg font-medium text-gray-900">Edit Task</h2>
-            <button
-              onClick={() => handleDeleteClick(editingTask)}
-              className="text-red-600 hover:text-red-800 text-sm font-medium"
-            >
-              Delete
-            </button>
+            <h2 className="text-lg font-medium text-gray-900">
+              {hasTaskEditPermission ? 'Edit Task' : 'Task Details'}
+            </h2>
+            {hasTaskEditPermission && (
+              <button
+                onClick={() => handleDeleteClick(editingTask)}
+                className="text-red-600 hover:text-red-800 text-sm font-medium"
+              >
+                Delete
+              </button>
+            )}
           </div>
           <TaskForm
             task={editingTask}
@@ -187,6 +196,7 @@ export default function ProjectTasksPage() {
             onSubmit={handleUpdate}
             isSubmitting={updateMutation.isPending}
             onCancel={() => setEditingTask(null)}
+            readOnly={!hasTaskEditPermission}
           />
         </div>
       ) : tasks && tasks.length > 0 ? (
@@ -196,18 +206,23 @@ export default function ProjectTasksPage() {
             tasks={tasks}
             onTaskClick={setEditingTask}
             onError={setApiError}
+            readOnly={!hasTaskEditPermission}
           />
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded p-8 text-center mt-6">
           <h3 className="text-sm font-medium text-gray-900">No tasks yet</h3>
-          <p className="mt-1 text-sm text-gray-500">Create your first task to start organizing this project.</p>
-          <button
-            onClick={() => setIsCreating(true)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700"
-          >
-            Create Task
-          </button>
+          <p className="mt-1 text-sm text-gray-500">
+            {hasTaskEditPermission ? 'Create your first task to start organizing this project.' : 'There are no tasks in this project yet.'}
+          </p>
+          {hasTaskEditPermission && (
+            <button
+              onClick={() => setIsCreating(true)}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700"
+            >
+              Create Task
+            </button>
+          )}
         </div>
       )}
 
