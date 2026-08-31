@@ -4,6 +4,7 @@ import { useProject, useUpdateProject, useDeleteProject } from '../../hooks/useP
 import { StatusBadge, PriorityBadge } from '../../components/projects/ProjectBadges';
 import ProjectForm from '../../components/projects/ProjectForm';
 import ProjectMembers from '../../components/projects/ProjectMembers';
+import ActivityFeed from '../../components/activity/ActivityFeed';
 import { useAuthStore } from '../../stores/authStore';
 import { getProjectRole, canEditProject, canDeleteProject } from '../../lib/permissions';
 import type { UpdateProjectInput } from '../../types/project';
@@ -261,6 +262,8 @@ export default function ProjectDetailPage() {
         currentUserRole={userRole}
         ownerId={project.owner}
       />
+
+      <ActivityFeed projectId={projectId!} />
 
       {/* Delete confirmation dialog */}
       {showDeleteConfirm && (

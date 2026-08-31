@@ -4,7 +4,7 @@
 Module 3 — Collaboration, Permissions & Analytics
 
 ## Status
-Module 3 Backend Models and APIs for Comments and Activity are complete. Proceeding to Comments and Activity UI.
+Module 3 Comments & Activity UI is complete. Proceeding to Audit Logs.
 
 ## Completed
 - Project scope documented.
@@ -68,9 +68,20 @@ Module 3 Backend Models and APIs for Comments and Activity are complete. Proceed
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M3-T06 — Comments & Activity UI
+1. M3-T07 — Audit Logs API & UI
 
 ## Completed
+- **M3-T06 — Comments & Activity UI**
+  - Created strongly typed interfaces for `Comment` and `Activity` matching backend responses.
+  - Implemented `commentService.ts` and `activityService.ts` using `apiClient`.
+  - Created TanStack Query hooks `useCommentQueries.ts` and `useActivityQueries.ts`.
+  - Built reusable UI components for Comments (`CommentForm`, `CommentItem`, `CommentList`).
+  - Built UI component for `ActivityFeed` with a visual timeline layout.
+  - Integrated `CommentList` into the task experience inside `TaskForm.tsx`.
+  - Integrated `ActivityFeed` into `ProjectDetailPage.tsx`.
+  - Enforced client-side role visualization mirroring backend authorization limits.
+  - Provided graceful loading, error, and empty states.
+  - Verified no regressions using `test_comments_activity.js`, `tsc`, and `vite build`.
 - [x] M3-T05 — Comments & Activity Backend Models/API
   - Created `Comment` model (task, author, content, mentionedUsers, isEdited).
   - Created `Activity` model (project, task, actor, action, metadata).

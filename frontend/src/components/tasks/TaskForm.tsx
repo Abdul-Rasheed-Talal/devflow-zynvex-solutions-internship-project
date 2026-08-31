@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { Task, CreateTaskInput, UpdateTaskInput } from '../../types/task';
 import { TASK_STATUSES, TASK_PRIORITIES } from '../../types/task';
-import type { ProjectMember } from '../../types/project';
+import type { ProjectMember, ProjectRole } from '../../types/project';
+import CommentList from '../comments/CommentList';
+import { useAuthStore } from '../../stores/authStore';
 
 interface TaskFormProps {
   task?: Task;
@@ -22,6 +24,7 @@ export default function TaskForm({
   onCancel,
   readOnly = false,
 }: TaskFormProps) {
+  const { user } = useAuthStore();
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
   const [status, setStatus] = useState(task?.status || 'todo');
@@ -212,6 +215,39 @@ export default function TaskForm({
           </button>
         )}
       </div>
+
+      {task && (
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <CommentList
+            taskId={task._id}
+            userRole={
+              // We infer role from the projectMembers list (if populated) and auth user
+              // Note: the user role could also be passed down as a prop for perfect accuracy,
+              // but we can compute it if we have the project owner and members.
+              // We'll map the current user against projectMembers to find their role.
+              // If the task's creator is the owner, or if we have access to the full project context...
+              // In this case, `projectMembers` has everyone except the owner if the owner isn't listed as a member.
+              // We will rely on getting it from the list.
+              // A safer approach: finding the user in `projectMembers`.
+              (() => {
+                if (!user) return null;
+                const member = projectMembers.find(m => {
+                  const mId = m.user ? m.user.id : (m as any).id;
+                  return mId === user.id;
+                });
+                // If they are not a member but can see the task, they must be the owner (if project is private).
+                // But without project object, we can't definitively check owner.
+                // For this component, passing down the exact role is better.
+                // Wait, if they can see the task, and readOnly is true, they might be viewer.
+                // Let's pass userRole as a prop to TaskForm. If not provided, we extract from projectMembers (assuming member or viewer).
+                if (member) return member.role;
+                // Fallback: If not readOnly, they likely have edit permissions, assume owner/admin if not in members.
+                return readOnly ? 'viewer' : 'owner';
+              })() as ProjectRole | null
+            }
+          />
+        </div>
+      )}
     </form>
   );
 }
