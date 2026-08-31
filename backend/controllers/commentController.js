@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Comment from '../models/Comment.js';
 import Activity from '../models/Activity.js';
 import User from '../models/User.js';
+import { emitProjectEvent } from '../socket/events.js';
 
 function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
@@ -91,6 +92,8 @@ export const createComment = async (req, res, next) => {
       .populate('author', 'name email createdAt updatedAt')
       .populate('mentionedUsers', 'name email createdAt updatedAt');
 
+    emitProjectEvent(req.task.project, 'comment.created', { projectId: req.task.project, taskId: req.task._id, commentId: populatedComment._id });
+
     res.status(201).json({
       success: true,
       data: populatedComment,
@@ -157,6 +160,8 @@ export const updateComment = async (req, res, next) => {
       .populate('author', 'name email createdAt updatedAt')
       .populate('mentionedUsers', 'name email createdAt updatedAt');
 
+    emitProjectEvent(req.project._id, 'comment.updated', { projectId: req.project._id, taskId: req.task ? req.task._id : comment.task, commentId: populatedComment._id });
+
     res.status(200).json({
       success: true,
       data: populatedComment,
@@ -200,6 +205,8 @@ export const deleteComment = async (req, res, next) => {
         commentId: comment._id,
       },
     });
+
+    emitProjectEvent(req.project._id, 'comment.deleted', { projectId: req.project._id, taskId: req.task ? req.task._id : comment.task, commentId: comment._id });
 
     res.status(200).json({
       success: true,

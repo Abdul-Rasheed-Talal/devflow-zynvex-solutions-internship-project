@@ -308,6 +308,32 @@ All project endpoints require authentication via the `devflow_access_token` Http
 - **Error Behavior**:
   - Not an admin or owner: `403`.
 
+## Real-Time Sync (Socket.IO)
+
+DevFlow uses Socket.IO as a real-time event distribution layer to instruct clients to invalidate stale caches. 
+The REST APIs remain the absolute source of truth.
+
+**Connection & Authentication**
+- Connect to the root URL (or the `API_URL` stripped of `/api`).
+- Connections MUST supply credentials (HttpOnly `devflow_access_token` cookie).
+- Invalid tokens or unauthenticated requests are rejected during the socket handshake.
+- Upon connection, sockets automatically join a private room: `user_<userId>`.
+
+**Project Rooms**
+- Sockets can explicitly join project rooms by emitting: `join_project(projectId)`.
+- The server performs a database authorization check. Only project owners and active members are allowed to join.
+- Sockets can explicitly leave by emitting: `leave_project(projectId)`.
+
+**Events Emitted (Server to Client)**
+- Project events: `project.updated`, `project.deleted`, `membership.updated`
+- Task events: `task.created`, `task.updated`, `task.deleted`, `task.status_changed`
+- Comment events: `comment.created`, `comment.updated`, `comment.deleted`
+
+**Payload Structure**
+- Payloads are intentionally minimal and safe. They NEVER include sensitive data, tokens, or entire database documents.
+- Example payload: `{ projectId: "...", taskId: "..." }`
+- Clients should use the IDs provided to trigger REST API re-fetches (e.g. invalidating a TanStack query).
+
 ## API rules
 - JSON request/response.
 - Consistent success/error structure.

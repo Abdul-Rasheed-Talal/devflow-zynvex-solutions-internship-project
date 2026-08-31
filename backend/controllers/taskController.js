@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
+import { emitProjectEvent } from '../socket/events.js';
 
 /**
  * Validate that a string is a valid MongoDB ObjectId.
@@ -101,6 +102,8 @@ export const createTask = async (req, res, next) => {
       .populate('creator', 'name email createdAt updatedAt')
       .populate('assignee', 'name email createdAt updatedAt');
 
+    emitProjectEvent(project._id, 'task.created', { projectId: project._id, taskId: populatedTask._id });
+
     res.status(201).json({
       success: true,
       data: populatedTask,
@@ -185,6 +188,10 @@ export const updateTask = async (req, res, next) => {
       .populate('creator', 'name email createdAt updatedAt')
       .populate('assignee', 'name email createdAt updatedAt');
 
+    // Emit different events based on what changed (for fine-grained invalidation if needed, or just task.updated)
+    const isStatusOnly = Object.keys(updates).length === 1 && updates.status;
+    emitProjectEvent(project._id, isStatusOnly ? 'task.status_changed' : 'task.updated', { projectId: project._id, taskId: populatedTask._id });
+
     res.status(200).json({
       success: true,
       data: populatedTask,
@@ -204,7 +211,12 @@ export const updateTask = async (req, res, next) => {
  */
 export const deleteTask = async (req, res, next) => {
   try {
+    const projectId = req.task.project;
+    const taskId = req.task._id;
+    
     await req.task.deleteOne();
+
+    emitProjectEvent(projectId, 'task.deleted', { projectId, taskId });
 
     res.status(200).json({
       success: true,

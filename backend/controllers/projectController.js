@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
 import { logAuditEvent } from '../utils/auditLogger.js';
+import { emitProjectEvent } from '../socket/events.js';
 
 /**
  * Validate that a string is a valid MongoDB ObjectId.
@@ -132,6 +133,8 @@ export const updateProject = async (req, res, next) => {
       return next(saveError);
     }
 
+    emitProjectEvent(project._id, 'project.updated', { projectId: project._id });
+
     res.status(200).json({
       success: true,
       data: project,
@@ -155,6 +158,8 @@ export const deleteProject = async (req, res, next) => {
       projectId: req.project._id,
       action: 'project_deleted',
     });
+
+    emitProjectEvent(req.project._id, 'project.deleted', { projectId: req.project._id });
 
     res.status(200).json({
       success: true,
@@ -255,6 +260,8 @@ export const addProjectMember = async (req, res, next) => {
       targetUser: userId,
     });
 
+    emitProjectEvent(project._id, 'membership.updated', { projectId: project._id, userId });
+
     res.status(200).json({
       success: true,
       data: project,
@@ -310,6 +317,8 @@ export const removeProjectMember = async (req, res, next) => {
       action: 'member_removed',
       targetUser: userId,
     });
+
+    emitProjectEvent(project._id, 'membership.updated', { projectId: project._id, userId });
 
     res.status(200).json({
       success: true,
@@ -369,6 +378,8 @@ export const updateProjectMemberRole = async (req, res, next) => {
       action: 'role_changed',
       targetUser: userId,
     });
+
+    emitProjectEvent(project._id, 'membership.updated', { projectId: project._id, userId });
 
     res.status(200).json({
       success: true,

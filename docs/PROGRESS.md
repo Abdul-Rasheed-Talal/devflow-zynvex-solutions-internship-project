@@ -4,9 +4,18 @@
 Module 3 — Collaboration, Permissions & Analytics
 
 ## Status
-Module 3 Comments & Activity UI is complete. Proceeding to Audit Logs.
+Module 3 Socket.IO Integration is complete. Proceeding to Notifications API & UI.
 
 ## Completed
+- **M3-T08 — Socket.IO Integration & Real-time Sync**
+  - Integrated `socket.io` into Express backend.
+  - Implemented secure, JWT cookie-based Socket authentication matching the REST API.
+  - Established project rooms (`project_<id>`) and user rooms (`user_<id>`).
+  - Added strict server-side RBAC for project room joins.
+  - Intercepted REST controllers (`projectController`, `taskController`, `commentController`) to emit targeted real-time events (`project.updated`, `task.created`, etc.) upon successful DB commits.
+  - Kept payloads small and secure, deferring source-of-truth back to the REST API.
+  - Implemented `useProjectSocket` on the frontend using `socket.io-client` to listen for events and invalidate targeted TanStack Query caches.
+  - Verified no regression in REST auth tests, built a standalone `test_socket.js`, and passed `npx tsc --noEmit && npm run build`.
 - Project scope documented.
 - Four-module roadmap documented.
 - AI-agent engineering rules documented.
@@ -68,7 +77,7 @@ Module 3 Comments & Activity UI is complete. Proceeding to Audit Logs.
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M3-T07 — Audit Logs API & UI
+1. M3-T09 — Notifications API & UI
 
 ## Completed
 - **M3-T06 — Comments & Activity UI**

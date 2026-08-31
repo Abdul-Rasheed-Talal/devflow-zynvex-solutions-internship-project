@@ -6,6 +6,7 @@ import ProjectForm from '../../components/projects/ProjectForm';
 import ProjectMembers from '../../components/projects/ProjectMembers';
 import ActivityFeed from '../../components/activity/ActivityFeed';
 import AuditLogFeed from '../../components/projects/AuditLogFeed';
+import { useProjectSocket } from '../../hooks/useProjectSocket';
 import { useAuthStore } from '../../stores/authStore';
 import { getProjectRole, canEditProject, canDeleteProject } from '../../lib/permissions';
 import type { UpdateProjectInput } from '../../types/project';
@@ -34,6 +35,9 @@ export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  
+  // Setup real-time socket connection for this project
+  useProjectSocket(projectId!);
 
   const { data: project, isLoading, error } = useProject(projectId!);
   const updateMutation = useUpdateProject(projectId!);

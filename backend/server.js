@@ -1,12 +1,18 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { createServer } from 'http';
 import env from './config/env.js';
 import connectDB from './config/db.js';
 import routes from './routes/index.js';
 import errorHandler from './middleware/errorHandler.js';
+import { initSocket } from './socket/index.js';
 
 const app = express();
+const server = createServer(app);
+
+// --- Socket.IO ---
+initSocket(server);
 
 // --- Middleware ---
 app.use(
@@ -28,7 +34,7 @@ app.use(errorHandler);
 async function start() {
   await connectDB();
 
-  app.listen(env.port, () => {
+  server.listen(env.port, () => {
     console.log(
       `DevFlow API server running on port ${env.port} [${env.nodeEnv}]`
     );
