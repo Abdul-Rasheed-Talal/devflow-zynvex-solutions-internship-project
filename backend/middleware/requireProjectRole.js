@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import Task from '../models/Task.js';
+import Comment from '../models/Comment.js';
 
 const ROLE_HIERARCHY = {
   viewer: 1,
@@ -20,8 +21,20 @@ export const requireProjectRole = (requiredRole) => {
     try {
       let projectId = req.params.projectId;
       let task = null;
+      let comment = null;
 
-      // 1. Resolve projectId (from URL params directly, or by looking up a Task)
+      // 1. Resolve projectId (from URL params directly, or by looking up a Task/Comment)
+      if (!projectId && req.params.commentId) {
+        if (!mongoose.Types.ObjectId.isValid(req.params.commentId)) {
+          return res.status(400).json({ success: false, message: 'Invalid comment ID' });
+        }
+        comment = await Comment.findById(req.params.commentId);
+        if (!comment) {
+          return res.status(404).json({ success: false, message: 'Comment not found' });
+        }
+        projectId = comment.project;
+      }
+
       if (!projectId && req.params.taskId) {
         if (!mongoose.Types.ObjectId.isValid(req.params.taskId)) {
           return res.status(400).json({ success: false, message: 'Invalid task ID' });
@@ -88,6 +101,9 @@ export const requireProjectRole = (requiredRole) => {
       req.projectRole = resolvedRole;
       if (task) {
         req.task = task;
+      }
+      if (comment) {
+        req.comment = comment;
       }
 
       next();

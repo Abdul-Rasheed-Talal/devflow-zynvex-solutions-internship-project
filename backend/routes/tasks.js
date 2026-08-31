@@ -4,6 +4,10 @@ import {
   updateTask,
   deleteTask,
 } from '../controllers/taskController.js';
+import {
+  getComments,
+  createComment,
+} from '../controllers/commentController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireProjectRole } from '../middleware/requireProjectRole.js';
 
@@ -26,5 +30,19 @@ router.patch('/:taskId', requireProjectRole('member'), updateTask);
 // @desc    Delete a task
 // @access  Private (member or higher)
 router.delete('/:taskId', requireProjectRole('member'), deleteTask);
+
+// ==========================================
+// Nested Comment Routes
+// ==========================================
+
+// @route   GET /api/tasks/:taskId/comments
+// @desc    Get comments for a specific task
+// @access  Private (viewer or higher)
+router.get('/:taskId/comments', requireProjectRole('viewer'), getComments);
+
+// @route   POST /api/tasks/:taskId/comments
+// @desc    Create a new comment
+// @access  Private (member or higher)
+router.post('/:taskId/comments', requireProjectRole('member'), createComment);
 
 export default router;

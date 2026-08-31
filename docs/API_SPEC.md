@@ -253,6 +253,50 @@ All project endpoints require authentication via the `devflow_access_token` Http
   - Task not found: `404`.
   - Not an owner or member: `403`.
 
+## Comments
+
+**GET /api/tasks/:taskId/comments**
+- **Purpose**: List comments for a task.
+- **Authentication**: Required.
+- **Authorization**: Viewer or higher.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...] }` with comments populated with `author` and `mentionedUsers`.
+
+**POST /api/tasks/:taskId/comments**
+- **Purpose**: Create a new comment.
+- **Authentication**: Required.
+- **Authorization**: Member or higher.
+- **Request Body**: `{ "content": "...", "mentionedUsers": ["..."] }`
+- **Response (Success)**: `201 Created`. Returns `{ "success": true, "data": { ... } }`.
+- **Error Behavior**:
+  - Empty or >2000 chars content: `400`.
+  - Not a member or higher: `403`.
+
+**PATCH /api/comments/:commentId**
+- **Purpose**: Edit a comment.
+- **Authentication**: Required.
+- **Authorization**: Comment author only.
+- **Request Body**: `{ "content": "...", "mentionedUsers": ["..."] }`
+- **Response (Success)**: `200 OK`. Returns updated comment with `isEdited: true`.
+- **Error Behavior**:
+  - Not the author: `403`.
+  - Empty or >2000 chars content: `400`.
+
+**DELETE /api/comments/:commentId**
+- **Purpose**: Delete a comment.
+- **Authentication**: Required.
+- **Authorization**: Comment author OR project Admin/Owner.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": {} }`.
+- **Error Behavior**:
+  - Not author/admin/owner: `403`.
+
+## Activity
+
+**GET /api/projects/:projectId/activity**
+- **Purpose**: Retrieve project activity feed.
+- **Authentication**: Required.
+- **Authorization**: Viewer or higher.
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...] }` sorted chronologically (newest first).
+
 ## API rules
 - JSON request/response.
 - Consistent success/error structure.

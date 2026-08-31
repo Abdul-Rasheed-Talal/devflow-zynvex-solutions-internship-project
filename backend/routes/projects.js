@@ -14,6 +14,9 @@ import {
   getProjectTasks,
   createTask,
 } from '../controllers/taskController.js';
+import {
+  getProjectActivity,
+} from '../controllers/activityController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireProjectRole } from '../middleware/requireProjectRole.js';
 
@@ -80,5 +83,14 @@ router.get('/:projectId/tasks', requireProjectRole('viewer'), getProjectTasks);
 // @desc    Create a new task in a project
 // @access  Private (member or higher)
 router.post('/:projectId/tasks', requireProjectRole('member'), createTask);
+
+// ==========================================
+// Nested Activity Routes
+// ==========================================
+
+// @route   GET /api/projects/:projectId/activity
+// @desc    Get project activity
+// @access  Private (viewer or higher)
+router.get('/:projectId/activity', requireProjectRole('viewer'), getProjectActivity);
 
 export default router;

@@ -4,7 +4,7 @@
 Module 3 — Collaboration, Permissions & Analytics
 
 ## Status
-Module 3 specification complete. Proceeding to RBAC foundation.
+Module 3 Backend Models and APIs for Comments and Activity are complete. Proceeding to Comments and Activity UI.
 
 ## Completed
 - Project scope documented.
@@ -68,9 +68,23 @@ Module 3 specification complete. Proceeding to RBAC foundation.
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M3-T04 — RBAC UI & Role Management Frontend
+1. M3-T06 — Comments & Activity UI
 
 ## Completed
+- [x] M3-T05 — Comments & Activity Backend Models/API
+  - Created `Comment` model (task, author, content, mentionedUsers, isEdited).
+  - Created `Activity` model (project, task, actor, action, metadata).
+  - Extended `requireProjectRole` middleware to resolve `projectId` implicitly from `commentId`.
+  - Implemented `commentController` with strict server-side RBAC (Viewer cannot create, Admin/Owner can delete any, Authors can edit/delete their own).
+  - Implemented `activityController` to list project activities.
+  - Auto-generated Activity feed entries upon Comment creation, update, and deletion.
+  - Developed `test_comments_activity.js` verifying CRUD rules and activity hooks. Tested successfully.
+- **M3-T04 — RBAC UI & Role Management Frontend**
+  - Implemented `RoleManagement` component for Admin/Owner access.
+  - Integrated role-change logic in the members list UI.
+  - Added visual indicators for roles within the member list.
+  - Implemented permission-based UI filtering (hiding/disabling actions based on `role` resolution).
+  - Validated UI feedback for authorization errors (403).
 - **M3-T03 — Role Enforcement Middleware & Controller Updates**
   - Created `requireProjectRole` middleware implementing hierarchical RBAC (owner > admin > member > viewer).
   - Intercepted Task/Project API endpoints and injected the role enforcement middleware based on the Module 3 specification.
