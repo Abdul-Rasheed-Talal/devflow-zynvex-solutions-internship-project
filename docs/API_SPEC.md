@@ -63,6 +63,28 @@ PUT /api/users/me
 
 ### Endpoint responsibility
 
+### `GET /api/activity/system` (Admin Only)
+- Fetches paginated global system events.
+
+---
+
+## 7. Notifications
+
+### `GET /api/notifications`
+- **Description:** Retrieve paginated notifications for the authenticated user.
+- **Access:** Private
+- **Response:** Array of Notification objects.
+
+### `PATCH /api/notifications/read-all`
+- **Description:** Marks all unread notifications for the user as read.
+- **Access:** Private
+- **Response:** Success object.
+
+### `PATCH /api/notifications/:notificationId/read`
+- **Description:** Marks a single notification as read.
+- **Access:** Private
+- **Response:** Updated Notification object.
+
 **GET /api/auth/me** — Returns the currently authenticated user's identity based on the active session/token. Used by the frontend to verify whether the user is still authenticated and to bootstrap the auth state on page load. Returns minimal identity information (id, name, email).
 
 **GET /api/users/me** — Returns the authenticated user's full profile data for display and editing.

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
 import { emitProjectEvent } from '../socket/events.js';
+import { createTaskAssignmentNotification, createTaskUpdateNotification } from '../utils/notificationService.js';
 
 /**
  * Validate that a string is a valid MongoDB ObjectId.
@@ -102,6 +103,10 @@ export const createTask = async (req, res, next) => {
       .populate('creator', 'name email createdAt updatedAt')
       .populate('assignee', 'name email createdAt updatedAt');
 
+    if (populatedTask.assignee) {
+      await createTaskAssignmentNotification(project, populatedTask, req.user.id);
+    }
+
     emitProjectEvent(project._id, 'task.created', { projectId: project._id, taskId: populatedTask._id });
 
     res.status(201).json({
@@ -147,6 +152,7 @@ export const updateTask = async (req, res, next) => {
     const task = req.task;
     const project = req.project;
     const updates = pickFields(req.body, ALLOWED_TASK_FIELDS);
+    const oldAssigneeId = task.assignee ? task.assignee.toString() : null;
 
     if (Object.keys(updates).length === 0) {
       const err = new Error('No valid fields to update');
@@ -187,6 +193,16 @@ export const updateTask = async (req, res, next) => {
     const populatedTask = await Task.findById(task._id)
       .populate('creator', 'name email createdAt updatedAt')
       .populate('assignee', 'name email createdAt updatedAt');
+
+    // Handle notifications
+    const newAssigneeId = populatedTask.assignee ? populatedTask.assignee._id.toString() : null;
+    if (newAssigneeId && newAssigneeId !== oldAssigneeId) {
+      // Re-assigned or newly assigned
+      await createTaskAssignmentNotification(project, populatedTask, req.user.id);
+    } else if (newAssigneeId && newAssigneeId === oldAssigneeId) {
+      // Updated but assignee remained the same
+      await createTaskUpdateNotification(project, populatedTask, req.user.id);
+    }
 
     // Emit different events based on what changed (for fine-grained invalidation if needed, or just task.updated)
     const isStatusOnly = Object.keys(updates).length === 1 && updates.status;

@@ -3,6 +3,7 @@ import Comment from '../models/Comment.js';
 import Activity from '../models/Activity.js';
 import User from '../models/User.js';
 import { emitProjectEvent } from '../socket/events.js';
+import { createMentionNotifications } from '../utils/notificationService.js';
 
 function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
@@ -91,6 +92,9 @@ export const createComment = async (req, res, next) => {
     const populatedComment = await Comment.findById(newComment._id)
       .populate('author', 'name email createdAt updatedAt')
       .populate('mentionedUsers', 'name email createdAt updatedAt');
+
+    // Create notifications for mentions
+    await createMentionNotifications(req.project, req.task, req.user.id, newComment._id, parsedMentions);
 
     emitProjectEvent(req.task.project, 'comment.created', { projectId: req.task.project, taskId: req.task._id, commentId: populatedComment._id });
 

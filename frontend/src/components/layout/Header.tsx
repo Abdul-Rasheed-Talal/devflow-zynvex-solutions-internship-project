@@ -1,5 +1,5 @@
-import React from 'react';
 import { useAuthStore } from '../../stores/authStore';
+import NotificationBell from '../notifications/NotificationBell';
 
 export default function Header() {
   const { user, logout } = useAuthStore();
@@ -16,7 +16,10 @@ export default function Header() {
           <span className="text-sm font-medium text-gray-900">{user?.name}</span>
           <span className="text-xs text-gray-500">{user?.email}</span>
         </div>
-        
+        <NotificationBell />
+
+        <div className="h-6 w-px bg-gray-200 mx-2"></div>
+
         <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold shrink-0">
           {user?.name?.charAt(0).toUpperCase()}
         </div>

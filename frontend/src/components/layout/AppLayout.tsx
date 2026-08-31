@@ -1,9 +1,11 @@
-import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useGlobalSocket } from '../../hooks/useGlobalSocket';
 
 export default function AppLayout() {
+  useGlobalSocket();
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
       <Sidebar />
