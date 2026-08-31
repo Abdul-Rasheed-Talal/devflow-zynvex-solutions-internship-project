@@ -160,9 +160,9 @@ async function testPostMember() {
 async function testGetMembers() {
   console.log('\n--- GET MEMBERS ---');
 
-  // Regular member cannot get members list based on module spec (Only owner can manage)
+  // Regular member can get members list in M3
   let r = await req(`${BASE}/projects/${createdProjectId}/members`, 'GET', null, memberCookie);
-  assert(r.status === 403, 'Regular member cannot manage membership → 403');
+  assert(r.status === 200, 'Regular member can view membership → 200');
 
   // Unrelated authenticated user cannot get members list
   r = await req(`${BASE}/projects/${createdProjectId}/members`, 'GET', null, unrelatedCookie);
