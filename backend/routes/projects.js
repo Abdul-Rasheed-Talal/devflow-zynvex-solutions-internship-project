@@ -17,6 +17,9 @@ import {
 import {
   getProjectActivity,
 } from '../controllers/activityController.js';
+import {
+  getProjectAuditLogs,
+} from '../controllers/auditController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { requireProjectRole } from '../middleware/requireProjectRole.js';
 
@@ -92,5 +95,14 @@ router.post('/:projectId/tasks', requireProjectRole('member'), createTask);
 // @desc    Get project activity
 // @access  Private (viewer or higher)
 router.get('/:projectId/activity', requireProjectRole('viewer'), getProjectActivity);
+
+// ==========================================
+// Nested Audit Log Routes
+// ==========================================
+
+// @route   GET /api/projects/:projectId/audit
+// @desc    Get project audit logs
+// @access  Private (admin or higher)
+router.get('/:projectId/audit', requireProjectRole('admin'), getProjectAuditLogs);
 
 export default router;

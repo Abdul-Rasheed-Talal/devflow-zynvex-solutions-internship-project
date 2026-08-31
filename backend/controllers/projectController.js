@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
+import { logAuditEvent } from '../utils/auditLogger.js';
 
 /**
  * Validate that a string is a valid MongoDB ObjectId.
@@ -149,6 +150,12 @@ export const deleteProject = async (req, res, next) => {
   try {
     await req.project.deleteOne();
 
+    await logAuditEvent({
+      req,
+      projectId: req.project._id,
+      action: 'project_deleted',
+    });
+
     res.status(200).json({
       success: true,
       message: 'Project deleted successfully',
@@ -241,6 +248,13 @@ export const addProjectMember = async (req, res, next) => {
     project.members.push({ user: userId, role: assignedRole });
     await project.save();
 
+    await logAuditEvent({
+      req,
+      projectId: project._id,
+      action: 'member_added',
+      targetUser: userId,
+    });
+
     res.status(200).json({
       success: true,
       data: project,
@@ -289,6 +303,13 @@ export const removeProjectMember = async (req, res, next) => {
     });
     
     await project.save();
+
+    await logAuditEvent({
+      req,
+      projectId: project._id,
+      action: 'member_removed',
+      targetUser: userId,
+    });
 
     res.status(200).json({
       success: true,
@@ -341,6 +362,13 @@ export const updateProjectMemberRole = async (req, res, next) => {
 
     member.role = role;
     await project.save();
+
+    await logAuditEvent({
+      req,
+      projectId: project._id,
+      action: 'role_changed',
+      targetUser: userId,
+    });
 
     res.status(200).json({
       success: true,

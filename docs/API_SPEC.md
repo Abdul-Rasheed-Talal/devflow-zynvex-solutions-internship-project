@@ -297,6 +297,17 @@ All project endpoints require authentication via the `devflow_access_token` Http
 - **Authorization**: Viewer or higher.
 - **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...] }` sorted chronologically (newest first).
 
+## Audit Logs
+
+**GET /api/projects/:projectId/audit**
+- **Purpose**: Retrieve the security audit logs for a project.
+- **Authentication**: Required.
+- **Authorization**: Admin or Owner only.
+- **Query Parameters**: `page` (default: 1), `limit` (default: 20).
+- **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...], "pagination": {...} }`.
+- **Error Behavior**:
+  - Not an admin or owner: `403`.
+
 ## API rules
 - JSON request/response.
 - Consistent success/error structure.

@@ -5,6 +5,7 @@ import { StatusBadge, PriorityBadge } from '../../components/projects/ProjectBad
 import ProjectForm from '../../components/projects/ProjectForm';
 import ProjectMembers from '../../components/projects/ProjectMembers';
 import ActivityFeed from '../../components/activity/ActivityFeed';
+import AuditLogFeed from '../../components/projects/AuditLogFeed';
 import { useAuthStore } from '../../stores/authStore';
 import { getProjectRole, canEditProject, canDeleteProject } from '../../lib/permissions';
 import type { UpdateProjectInput } from '../../types/project';
@@ -264,6 +265,10 @@ export default function ProjectDetailPage() {
       />
 
       <ActivityFeed projectId={projectId!} />
+
+      {(userRole === 'owner' || userRole === 'admin') && (
+        <AuditLogFeed projectId={projectId!} />
+      )}
 
       {/* Delete confirmation dialog */}
       {showDeleteConfirm && (
