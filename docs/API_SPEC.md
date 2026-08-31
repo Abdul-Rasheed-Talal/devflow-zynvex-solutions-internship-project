@@ -82,13 +82,13 @@ All project endpoints require authentication via the `devflow_access_token` Http
 
 ### Authorization model
 
-| Operation | Owner | Member | Unrelated |
-|---|---|---|---|
-| List projects | sees own | sees shared | empty list |
-| View project | 200 | 200 | 403 |
-| Create project | 201 | 201 | 201 |
-| Update project | 200 | 403 | 403 |
-| Delete project | 200 | 403 | 403 |
+| Operation | Owner | Admin | Member | Viewer | Unrelated |
+|---|---|---|---|---|---|
+| List projects | sees own | sees own | sees own | sees own | empty list |
+| View project | 200 | 200 | 200 | 200 | 403 |
+| Create project | 201 | 201 | 201 | 201 | 201 |
+| Update project | 200 | 200 | 403 | 403 | 403 |
+| Delete project | 200 | 403 | 403 | 403 | 403 |
 
 **GET /api/projects**
 - **Purpose**: List projects the authenticated user owns or is a member of.
@@ -115,7 +115,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **GET /api/projects/:projectId**
 - **Purpose**: Get a single project by ID.
 - **Authentication**: Required.
-- **Authorization**: Owner or member only.
+- **Authorization**: Viewer or higher.
 - **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": { ... } }`.
 - **Error Behavior**:
   - Invalid ObjectId: `400 Bad Request`.
@@ -125,7 +125,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **PATCH /api/projects/:projectId**
 - **Purpose**: Update project details.
 - **Authentication**: Required.
-- **Authorization**: Owner only.
+- **Authorization**: Admin or higher.
 - **Updatable fields**: `name`, `description`, `status`, `priority`, `startDate`, `dueDate`.
 - **Protected fields**: `_id`, `owner`, `members`, `createdAt`, `updatedAt` cannot be modified through this endpoint.
 - **Response (Success)**: `200 OK`. Returns updated project.
@@ -151,7 +151,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **GET /api/projects/:projectId/members**
 - **Purpose**: Get the list of project members.
 - **Authentication**: Required.
-- **Authorization**: Owner only.
+- **Authorization**: Viewer or higher.
 - **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...] }` where each item is a safe user representation. Does not expose password hashes.
 - **Error Behavior**:
   - Invalid ObjectId: `400`.
@@ -161,7 +161,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **POST /api/projects/:projectId/members**
 - **Purpose**: Add a user to a project.
 - **Authentication**: Required.
-- **Authorization**: Owner only.
+- **Authorization**: Admin or higher.
 - **Request Body**: `{ "userId": "<user_id>" }`
 - **Response (Success)**: `200 OK`. Returns the updated project.
 - **Error Behavior**:
@@ -171,10 +171,23 @@ All project endpoints require authentication via the `devflow_access_token` Http
   - Attempting to add the owner: `400`.
   - User is already a member: `409`.
 
+**PATCH /api/projects/:projectId/members/:userId**
+- **Purpose**: Update a user's role in a project.
+- **Authentication**: Required.
+- **Authorization**: Admin or higher.
+- **Request Body**: `{ "role": "<admin|member|viewer>" }`
+- **Response (Success)**: `200 OK`. Returns the updated project.
+- **Error Behavior**:
+  - Invalid project/user ID or role: `400`.
+  - Project/user does not exist: `404`.
+  - Not an admin/owner: `403`.
+  - Attempting to modify the owner: `400`.
+  - User is not a member: `404`.
+
 **DELETE /api/projects/:projectId/members/:userId**
 - **Purpose**: Remove a user from a project.
 - **Authentication**: Required.
-- **Authorization**: Owner only.
+- **Authorization**: Admin or higher.
 - **Response (Success)**: `200 OK`. Returns the updated project.
 - **Error Behavior**:
   - Invalid project/user ID: `400`.
@@ -188,7 +201,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **GET /api/projects/:projectId/tasks**
 - **Purpose**: Get all tasks for a specific project.
 - **Authentication**: Required.
-- **Authorization**: Project owner or member.
+- **Authorization**: Viewer or higher.
 - **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": [...] }` containing task objects populated with safe creator and assignee fields.
 - **Error Behavior**:
   - Invalid project ID: `400`.
@@ -198,7 +211,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **POST /api/projects/:projectId/tasks**
 - **Purpose**: Create a new task within a project.
 - **Authentication**: Required.
-- **Authorization**: Project owner or member.
+- **Authorization**: Member or higher.
 - **Request Body**: `{ "title": "...", "description": "...", "status": "todo", "priority": "medium", "assignee": "...", "labels": ["...", "..."], "dueDate": "..." }`
 - **Response (Success)**: `201 Created`. Returns `{ "success": true, "data": { ... } }` containing the new task.
 - **Error Behavior**:
@@ -211,7 +224,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **GET /api/tasks/:taskId**
 - **Purpose**: Retrieve a single task.
 - **Authentication**: Required.
-- **Authorization**: Project owner or member of the parent project.
+- **Authorization**: Viewer or higher.
 - **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": { ... } }`.
 - **Error Behavior**:
   - Invalid task ID: `400`.
@@ -221,7 +234,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **PATCH /api/tasks/:taskId**
 - **Purpose**: Update an existing task.
 - **Authentication**: Required.
-- **Authorization**: Project owner or member of the parent project.
+- **Authorization**: Member or higher.
 - **Request Body**: Allowed fields: `title`, `description`, `status`, `priority`, `assignee`, `labels`, `dueDate`.
 - **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": { ... } }` containing the updated task.
 - **Error Behavior**:
@@ -233,7 +246,7 @@ All project endpoints require authentication via the `devflow_access_token` Http
 **DELETE /api/tasks/:taskId**
 - **Purpose**: Delete a task.
 - **Authentication**: Required.
-- **Authorization**: Project owner or member of the parent project.
+- **Authorization**: Member or higher.
 - **Response (Success)**: `200 OK`. Returns `{ "success": true, "data": {} }`.
 - **Error Behavior**:
   - Invalid task ID: `400`.

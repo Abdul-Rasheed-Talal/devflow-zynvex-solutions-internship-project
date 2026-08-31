@@ -68,9 +68,17 @@ Module 3 specification complete. Proceeding to RBAC foundation.
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M3-T03 — Role Enforcement Middleware & Controller Updates
+1. M3-T04 — RBAC UI & Role Management Frontend
 
 ## Completed
+- **M3-T03 — Role Enforcement Middleware & Controller Updates**
+  - Created `requireProjectRole` middleware implementing hierarchical RBAC (owner > admin > member > viewer).
+  - Intercepted Task/Project API endpoints and injected the role enforcement middleware based on the Module 3 specification.
+  - Refactored `projectController.js` and `taskController.js` to rely on the centralized middleware role-resolution, preventing redundant DB queries.
+  - Implemented `PATCH /api/projects/:projectId/members/:userId` to allow Admins/Owners to modify roles.
+  - Enforced strict Owner-protection boundaries (Admins cannot remove Owners, cannot modify Owner roles, and cannot assign the Owner role).
+  - Wrote a dedicated RBAC test suite (`backend/test_rbac.js`) with 29 passing assertions covering the entire Permission Matrix.
+  - Passed full regression suite seamlessly.
 - **M3-T02 — RBAC & Membership Schema Migration**
   - Migrated `Project.members` from `[ObjectId]` to `[{ user: ObjectId, role: String, addedAt: Date }]`.
   - Created robust, idempotent migration script (`backend/migrations/migrateProjectMemberships.js`).

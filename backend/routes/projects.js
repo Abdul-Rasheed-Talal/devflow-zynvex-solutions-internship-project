@@ -8,12 +8,14 @@ import {
   getProjectMembers,
   addProjectMember,
   removeProjectMember,
+  updateProjectMemberRole,
 } from '../controllers/projectController.js';
 import {
   getProjectTasks,
   createTask,
 } from '../controllers/taskController.js';
 import { requireAuth } from '../middleware/auth.js';
+import { requireProjectRole } from '../middleware/requireProjectRole.js';
 
 const router = Router();
 
@@ -32,33 +34,38 @@ router.post('/', createProject);
 
 // @route   GET /api/projects/:projectId
 // @desc    Get a single project by ID
-// @access  Private (owner or member)
-router.get('/:projectId', getProject);
+// @access  Private (viewer or higher)
+router.get('/:projectId', requireProjectRole('viewer'), getProject);
 
 // @route   PATCH /api/projects/:projectId
 // @desc    Update a project
-// @access  Private (owner only)
-router.patch('/:projectId', updateProject);
+// @access  Private (admin or higher)
+router.patch('/:projectId', requireProjectRole('admin'), updateProject);
 
 // @route   DELETE /api/projects/:projectId
 // @desc    Delete a project
 // @access  Private (owner only)
-router.delete('/:projectId', deleteProject);
+router.delete('/:projectId', requireProjectRole('owner'), deleteProject);
 
 // @route   GET /api/projects/:projectId/members
 // @desc    Get project members
-// @access  Private (owner only)
-router.get('/:projectId/members', getProjectMembers);
+// @access  Private (viewer or higher)
+router.get('/:projectId/members', requireProjectRole('viewer'), getProjectMembers);
 
 // @route   POST /api/projects/:projectId/members
 // @desc    Add a project member
-// @access  Private (owner only)
-router.post('/:projectId/members', addProjectMember);
+// @access  Private (admin or higher)
+router.post('/:projectId/members', requireProjectRole('admin'), addProjectMember);
+
+// @route   PATCH /api/projects/:projectId/members/:userId
+// @desc    Update a project member's role
+// @access  Private (admin or higher)
+router.patch('/:projectId/members/:userId', requireProjectRole('admin'), updateProjectMemberRole);
 
 // @route   DELETE /api/projects/:projectId/members/:userId
 // @desc    Remove a project member
-// @access  Private (owner only)
-router.delete('/:projectId/members/:userId', removeProjectMember);
+// @access  Private (admin or higher)
+router.delete('/:projectId/members/:userId', requireProjectRole('admin'), removeProjectMember);
 
 // ==========================================
 // Nested Task Routes
@@ -66,12 +73,12 @@ router.delete('/:projectId/members/:userId', removeProjectMember);
 
 // @route   GET /api/projects/:projectId/tasks
 // @desc    Get all tasks for a specific project
-// @access  Private (project owner or member)
-router.get('/:projectId/tasks', getProjectTasks);
+// @access  Private (viewer or higher)
+router.get('/:projectId/tasks', requireProjectRole('viewer'), getProjectTasks);
 
 // @route   POST /api/projects/:projectId/tasks
 // @desc    Create a new task in a project
-// @access  Private (project owner or member)
-router.post('/:projectId/tasks', createTask);
+// @access  Private (member or higher)
+router.post('/:projectId/tasks', requireProjectRole('member'), createTask);
 
 export default router;

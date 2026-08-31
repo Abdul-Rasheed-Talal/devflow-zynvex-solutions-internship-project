@@ -3,25 +3,6 @@ import Project from '../models/Project.js';
 import User from '../models/User.js';
 
 /**
- * Check whether a user can access a project (owner or member).
- */
-function canAccessProject(project, userId) {
-  const uid = userId.toString();
-  if (project.owner.toString() === uid) return true;
-  return project.members.some((m) => {
-    const memberId = m.user ? m.user.toString() : m.toString();
-    return memberId === uid;
-  });
-}
-
-/**
- * Check whether a user is the project owner.
- */
-function isProjectOwner(project, userId) {
-  return project.owner.toString() === userId.toString();
-}
-
-/**
  * Validate that a string is a valid MongoDB ObjectId.
  */
 function isValidObjectId(id) {
@@ -31,7 +12,7 @@ function isValidObjectId(id) {
 // Fields the client is allowed to set on create
 const ALLOWED_CREATE_FIELDS = ['name', 'description', 'status', 'priority', 'startDate', 'dueDate'];
 
-// Fields the owner is allowed to update
+// Fields the owner/admin is allowed to update
 const ALLOWED_UPDATE_FIELDS = ['name', 'description', 'status', 'priority', 'startDate', 'dueDate'];
 
 /**
@@ -107,35 +88,14 @@ export const createProject = async (req, res, next) => {
 /**
  * @desc    Get a single project by ID
  * @route   GET /api/projects/:projectId
- * @access  Private (owner or member)
+ * @access  Private (viewer or higher)
  */
 export const getProject = async (req, res, next) => {
   try {
-    const { projectId } = req.params;
-
-    if (!isValidObjectId(projectId)) {
-      const err = new Error('Invalid project ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const project = await Project.findById(projectId);
-
-    if (!project) {
-      const err = new Error('Project not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    if (!canAccessProject(project, req.user.id)) {
-      const err = new Error('You do not have access to this project');
-      err.statusCode = 403;
-      return next(err);
-    }
-
+    // req.project is populated by requireProjectRole middleware
     res.status(200).json({
       success: true,
-      data: project,
+      data: req.project,
     });
   } catch (error) {
     next(error);
@@ -145,31 +105,11 @@ export const getProject = async (req, res, next) => {
 /**
  * @desc    Update a project
  * @route   PATCH /api/projects/:projectId
- * @access  Private (owner only)
+ * @access  Private (admin or higher)
  */
 export const updateProject = async (req, res, next) => {
   try {
-    const { projectId } = req.params;
-
-    if (!isValidObjectId(projectId)) {
-      const err = new Error('Invalid project ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const project = await Project.findById(projectId);
-
-    if (!project) {
-      const err = new Error('Project not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    if (!isProjectOwner(project, req.user.id)) {
-      const err = new Error('Only the project owner can update this project');
-      err.statusCode = 403;
-      return next(err);
-    }
+    const project = req.project;
 
     // Pick only allowed fields — never allow owner, members, _id, timestamps
     const updates = pickFields(req.body, ALLOWED_UPDATE_FIELDS);
@@ -207,29 +147,7 @@ export const updateProject = async (req, res, next) => {
  */
 export const deleteProject = async (req, res, next) => {
   try {
-    const { projectId } = req.params;
-
-    if (!isValidObjectId(projectId)) {
-      const err = new Error('Invalid project ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const project = await Project.findById(projectId);
-
-    if (!project) {
-      const err = new Error('Project not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    if (!isProjectOwner(project, req.user.id)) {
-      const err = new Error('Only the project owner can delete this project');
-      err.statusCode = 403;
-      return next(err);
-    }
-
-    await project.deleteOne();
+    await req.project.deleteOne();
 
     res.status(200).json({
       success: true,
@@ -243,31 +161,12 @@ export const deleteProject = async (req, res, next) => {
 /**
  * @desc    Get project members
  * @route   GET /api/projects/:projectId/members
- * @access  Private (owner only)
+ * @access  Private (viewer or higher)
  */
 export const getProjectMembers = async (req, res, next) => {
   try {
-    const { projectId } = req.params;
-
-    if (!isValidObjectId(projectId)) {
-      const err = new Error('Invalid project ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const project = await Project.findById(projectId).populate('members.user');
-
-    if (!project) {
-      const err = new Error('Project not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    if (!isProjectOwner(project, req.user.id)) {
-      const err = new Error('Only the project owner can manage membership');
-      err.statusCode = 403;
-      return next(err);
-    }
+    // Populate members for response
+    const project = await Project.findById(req.project._id).populate('members.user');
 
     const safeMembers = project.members.map((member) => {
       if (!member.user) {
@@ -288,36 +187,16 @@ export const getProjectMembers = async (req, res, next) => {
 /**
  * @desc    Add a project member
  * @route   POST /api/projects/:projectId/members
- * @access  Private (owner only)
+ * @access  Private (admin or higher)
  */
 export const addProjectMember = async (req, res, next) => {
   try {
-    const { projectId } = req.params;
-    const { userId } = req.body;
-
-    if (!isValidObjectId(projectId)) {
-      const err = new Error('Invalid project ID');
-      err.statusCode = 400;
-      return next(err);
-    }
+    const { userId, role } = req.body;
+    const project = req.project;
 
     if (!userId || !isValidObjectId(userId)) {
       const err = new Error('Invalid user ID');
       err.statusCode = 400;
-      return next(err);
-    }
-
-    const project = await Project.findById(projectId);
-
-    if (!project) {
-      const err = new Error('Project not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    if (!isProjectOwner(project, req.user.id)) {
-      const err = new Error('Only the project owner can manage membership');
-      err.statusCode = 403;
       return next(err);
     }
 
@@ -334,17 +213,25 @@ export const addProjectMember = async (req, res, next) => {
       return next(err);
     }
 
+    const assignedRole = role || 'member';
+    if (!['admin', 'member', 'viewer'].includes(assignedRole)) {
+      const err = new Error('Invalid role');
+      err.statusCode = 400;
+      return next(err);
+    }
+
     const isAlreadyMember = project.members.some((m) => {
       const memberId = m.user ? m.user.toString() : m.toString();
       return memberId === userId.toString();
     });
+    
     if (isAlreadyMember) {
       const err = new Error('User is already a member');
       err.statusCode = 409;
       return next(err);
     }
 
-    project.members.push({ user: userId });
+    project.members.push({ user: userId, role: assignedRole });
     await project.save();
 
     res.status(200).json({
@@ -359,35 +246,16 @@ export const addProjectMember = async (req, res, next) => {
 /**
  * @desc    Remove a project member
  * @route   DELETE /api/projects/:projectId/members/:userId
- * @access  Private (owner only)
+ * @access  Private (admin or higher)
  */
 export const removeProjectMember = async (req, res, next) => {
   try {
-    const { projectId, userId } = req.params;
-
-    if (!isValidObjectId(projectId)) {
-      const err = new Error('Invalid project ID');
-      err.statusCode = 400;
-      return next(err);
-    }
+    const { userId } = req.params;
+    const project = req.project;
 
     if (!isValidObjectId(userId)) {
       const err = new Error('Invalid user ID');
       err.statusCode = 400;
-      return next(err);
-    }
-
-    const project = await Project.findById(projectId);
-
-    if (!project) {
-      const err = new Error('Project not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    if (!isProjectOwner(project, req.user.id)) {
-      const err = new Error('Only the project owner can manage membership');
-      err.statusCode = 403;
       return next(err);
     }
 
@@ -401,6 +269,7 @@ export const removeProjectMember = async (req, res, next) => {
       const memberId = m.user ? m.user.toString() : m.toString();
       return memberId === userId.toString();
     });
+    
     if (!isMember) {
       const err = new Error('User is not a member of this project');
       err.statusCode = 404;
@@ -411,6 +280,59 @@ export const removeProjectMember = async (req, res, next) => {
       const memberId = m.user ? m.user.toString() : m.toString();
       return memberId !== userId.toString();
     });
+    
+    await project.save();
+
+    res.status(200).json({
+      success: true,
+      data: project,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Update a project member's role
+ * @route   PATCH /api/projects/:projectId/members/:userId
+ * @access  Private (admin or higher)
+ */
+export const updateProjectMemberRole = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+    const project = req.project;
+
+    if (!isValidObjectId(userId)) {
+      const err = new Error('Invalid user ID');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    if (!role || !['admin', 'member', 'viewer'].includes(role)) {
+      const err = new Error('Invalid role specified');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    if (project.owner.toString() === userId.toString()) {
+      const err = new Error('Cannot modify the project owner role');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    const member = project.members.find((m) => {
+      const memberId = m.user ? m.user.toString() : m.toString();
+      return memberId === userId.toString();
+    });
+    
+    if (!member) {
+      const err = new Error('User is not a member of this project');
+      err.statusCode = 404;
+      return next(err);
+    }
+
+    member.role = role;
     await project.save();
 
     res.status(200).json({

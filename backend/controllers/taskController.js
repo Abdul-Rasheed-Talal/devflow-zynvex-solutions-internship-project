@@ -1,19 +1,6 @@
 import mongoose from 'mongoose';
 import Task from '../models/Task.js';
-import Project from '../models/Project.js';
 import User from '../models/User.js';
-
-/**
- * Check whether a user can access a project (owner or member).
- */
-function canAccessProject(project, userId) {
-  const uid = userId.toString();
-  if (project.owner.toString() === uid) return true;
-  return project.members.some((m) => {
-    const memberId = m.user ? m.user.toString() : m.toString();
-    return memberId === uid;
-  });
-}
 
 /**
  * Validate that a string is a valid MongoDB ObjectId.
@@ -39,32 +26,24 @@ function pickFields(source, allowed) {
 }
 
 /**
+ * Helper to check if a user is part of the project (owner or member)
+ */
+function isProjectParticipant(project, userIdStr) {
+  if (project.owner.toString() === userIdStr) return true;
+  return project.members.some((m) => {
+    const memberId = m.user ? m.user.toString() : m.toString();
+    return memberId === userIdStr;
+  });
+}
+
+/**
  * @desc    Get all tasks for a specific project
  * @route   GET /api/projects/:projectId/tasks
- * @access  Private (project owner or member)
+ * @access  Private (viewer or higher)
  */
 export const getProjectTasks = async (req, res, next) => {
   try {
-    const { projectId } = req.params;
-
-    if (!isValidObjectId(projectId)) {
-      const err = new Error('Invalid project ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const project = await Project.findById(projectId);
-    if (!project) {
-      const err = new Error('Project not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    if (!canAccessProject(project, req.user.id)) {
-      const err = new Error('You do not have access to this project');
-      err.statusCode = 403;
-      return next(err);
-    }
+    const projectId = req.project._id;
 
     const tasks = await Task.find({ project: projectId })
       .populate('creator', 'name email createdAt updatedAt')
@@ -83,31 +62,11 @@ export const getProjectTasks = async (req, res, next) => {
 /**
  * @desc    Create a new task in a project
  * @route   POST /api/projects/:projectId/tasks
- * @access  Private (project owner or member)
+ * @access  Private (member or higher)
  */
 export const createTask = async (req, res, next) => {
   try {
-    const { projectId } = req.params;
-
-    if (!isValidObjectId(projectId)) {
-      const err = new Error('Invalid project ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const project = await Project.findById(projectId);
-    if (!project) {
-      const err = new Error('Project not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    if (!canAccessProject(project, req.user.id)) {
-      const err = new Error('You do not have access to this project');
-      err.statusCode = 403;
-      return next(err);
-    }
-
+    const project = req.project;
     const taskData = pickFields(req.body, ALLOWED_TASK_FIELDS);
 
     // Validate assignee if supplied
@@ -125,7 +84,7 @@ export const createTask = async (req, res, next) => {
         return next(err);
       }
 
-      if (!canAccessProject(project, taskData.assignee)) {
+      if (!isProjectParticipant(project, taskData.assignee.toString())) {
         const err = new Error('Assignee must be a project member or owner');
         err.statusCode = 403;
         return next(err);
@@ -133,7 +92,7 @@ export const createTask = async (req, res, next) => {
     }
 
     // Enforce server-controlled relationships
-    taskData.project = projectId;
+    taskData.project = project._id;
     taskData.creator = req.user.id;
 
     const newTask = await Task.create(taskData);
@@ -157,34 +116,14 @@ export const createTask = async (req, res, next) => {
 /**
  * @desc    Get a single task by ID
  * @route   GET /api/tasks/:taskId
- * @access  Private (project owner or member)
+ * @access  Private (viewer or higher)
  */
 export const getTask = async (req, res, next) => {
   try {
-    const { taskId } = req.params;
-
-    if (!isValidObjectId(taskId)) {
-      const err = new Error('Invalid task ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const task = await Task.findById(taskId)
+    // req.task is fetched by requireProjectRole middleware, but not populated
+    const task = await Task.findById(req.task._id)
       .populate('creator', 'name email createdAt updatedAt')
       .populate('assignee', 'name email createdAt updatedAt');
-
-    if (!task) {
-      const err = new Error('Task not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    const project = await Project.findById(task.project);
-    if (!project || !canAccessProject(project, req.user.id)) {
-      const err = new Error('You do not have access to this task');
-      err.statusCode = 403;
-      return next(err);
-    }
 
     res.status(200).json({
       success: true,
@@ -198,32 +137,12 @@ export const getTask = async (req, res, next) => {
 /**
  * @desc    Update a task
  * @route   PATCH /api/tasks/:taskId
- * @access  Private (project owner or member)
+ * @access  Private (member or higher)
  */
 export const updateTask = async (req, res, next) => {
   try {
-    const { taskId } = req.params;
-
-    if (!isValidObjectId(taskId)) {
-      const err = new Error('Invalid task ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const task = await Task.findById(taskId);
-    if (!task) {
-      const err = new Error('Task not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    const project = await Project.findById(task.project);
-    if (!project || !canAccessProject(project, req.user.id)) {
-      const err = new Error('You do not have access to update this task');
-      err.statusCode = 403;
-      return next(err);
-    }
-
+    const task = req.task;
+    const project = req.project;
     const updates = pickFields(req.body, ALLOWED_TASK_FIELDS);
 
     if (Object.keys(updates).length === 0) {
@@ -251,7 +170,7 @@ export const updateTask = async (req, res, next) => {
           return next(err);
         }
 
-        if (!canAccessProject(project, updates.assignee)) {
+        if (!isProjectParticipant(project, updates.assignee.toString())) {
           const err = new Error('Assignee must be a project member or owner');
           err.statusCode = 403;
           return next(err);
@@ -281,33 +200,11 @@ export const updateTask = async (req, res, next) => {
 /**
  * @desc    Delete a task
  * @route   DELETE /api/tasks/:taskId
- * @access  Private (project owner or member)
+ * @access  Private (member or higher)
  */
 export const deleteTask = async (req, res, next) => {
   try {
-    const { taskId } = req.params;
-
-    if (!isValidObjectId(taskId)) {
-      const err = new Error('Invalid task ID');
-      err.statusCode = 400;
-      return next(err);
-    }
-
-    const task = await Task.findById(taskId);
-    if (!task) {
-      const err = new Error('Task not found');
-      err.statusCode = 404;
-      return next(err);
-    }
-
-    const project = await Project.findById(task.project);
-    if (!project || !canAccessProject(project, req.user.id)) {
-      const err = new Error('You do not have access to delete this task');
-      err.statusCode = 403;
-      return next(err);
-    }
-
-    await task.deleteOne();
+    await req.task.deleteOne();
 
     res.status(200).json({
       success: true,
