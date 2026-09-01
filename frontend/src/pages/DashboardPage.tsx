@@ -59,14 +59,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-200">
-          <h3 className="text-sm font-medium text-gray-900">Recent Activity</h3>
-        </div>
-        <div className="p-6 text-center text-sm text-gray-500">
-          Activity history and analytics will be available in Module 3.
-        </div>
-      </div>
     </div>
   );
 }

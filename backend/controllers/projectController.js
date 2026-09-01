@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
+import Activity from '../models/Activity.js';
 import { logAuditEvent } from '../utils/auditLogger.js';
 import { emitProjectEvent } from '../socket/events.js';
 
@@ -258,6 +259,13 @@ export const addProjectMember = async (req, res, next) => {
       projectId: project._id,
       action: 'member_added',
       targetUser: userId,
+    });
+
+    await Activity.create({
+      project: project._id,
+      actor: req.user.id,
+      action: 'member_added',
+      metadata: { userId, role: assignedRole },
     });
 
     emitProjectEvent(project._id, 'membership.updated', { projectId: project._id, userId });

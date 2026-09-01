@@ -10,9 +10,20 @@ interface KanbanColumnProps {
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void;
   onDrop: (taskId: string, status: TaskStatus) => void;
   readOnly?: boolean;
+  userRole?: string | null;
+  userId?: string;
 }
 
-export default function KanbanColumn({ status, tasks, onTaskClick, onStatusChange, onDrop, readOnly = false }: KanbanColumnProps) {
+export default function KanbanColumn({ 
+  status, 
+  tasks, 
+  onTaskClick, 
+  onStatusChange, 
+  onDrop, 
+  readOnly = false,
+  userRole,
+  userId
+}: KanbanColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const statusInfo = TASK_STATUSES.find(s => s.value === status);
   
@@ -55,15 +66,25 @@ export default function KanbanColumn({ status, tasks, onTaskClick, onStatusChang
       </div>
 
       <div className="flex flex-col gap-3 flex-grow">
-        {tasks.map(task => (
-          <TaskCard 
-            key={task._id} 
-            task={task} 
-            onClick={onTaskClick}
-            onStatusChange={onStatusChange}
-            readOnly={readOnly}
-          />
-        ))}
+        {tasks.map(task => {
+          const assigneeId = (task.assignee as any)?._id || task.assignee?.id || task.assignee;
+          const creatorId = (task.creator as any)?._id || task.creator?.id || task.creator;
+          const isTaskReadOnly = readOnly || (
+            userRole === 'member' && 
+            assigneeId !== userId && 
+            creatorId !== userId
+          );
+
+          return (
+            <TaskCard 
+              key={task._id} 
+              task={task} 
+              onClick={onTaskClick}
+              onStatusChange={onStatusChange}
+              readOnly={isTaskReadOnly}
+            />
+          );
+        })}
         
         {/* Invisible drop zone when empty so the whole column is a valid drop target */}
         {tasks.length === 0 && (

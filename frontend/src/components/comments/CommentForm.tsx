@@ -21,8 +21,8 @@ export default function CommentForm({
 }: CommentFormProps) {
   const [content, setContent] = useState(initialContent);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) e.preventDefault();
     if (!content.trim()) return;
     onSubmit(content);
     if (!initialContent) {
@@ -31,7 +31,7 @@ export default function CommentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="space-y-3">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm" role="alert">
           {error}
@@ -46,10 +46,16 @@ export default function CommentForm({
           rows={3}
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+              handleSubmit();
+            }
+          }}
           placeholder={placeholder}
           disabled={isSubmitting}
           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-3 disabled:bg-gray-50 disabled:text-gray-500"
         />
+        <p className="text-[10px] text-gray-400 mt-1">Press Ctrl+Enter to submit</p>
       </div>
       <div className="flex justify-end gap-2">
         {onCancel && (
@@ -63,13 +69,14 @@ export default function CommentForm({
           </button>
         )}
         <button
-          type="submit"
+          type="button"
+          onClick={handleSubmit}
           disabled={isSubmitting || !content.trim()}
           className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Saving...' : submitLabel}
         </button>
       </div>
-    </form>
+    </div>
   );
 }

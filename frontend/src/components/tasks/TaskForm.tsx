@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import type { Task, CreateTaskInput, UpdateTaskInput } from '../../types/task';
 import { TASK_STATUSES, TASK_PRIORITIES } from '../../types/task';
-import type { ProjectMember, ProjectRole } from '../../types/project';
+import type { ProjectMember, ProjectRole, Project } from '../../types/project';
 import CommentList from '../comments/CommentList';
 import { useAuthStore } from '../../stores/authStore';
 
 interface TaskFormProps {
   task?: Task;
+  project: Project;
   projectMembers: ProjectMember[];
   onSubmit: (data: CreateTaskInput | UpdateTaskInput) => void;
   isSubmitting: boolean;
@@ -17,6 +18,7 @@ interface TaskFormProps {
 
 export default function TaskForm({
   task,
+  project,
   projectMembers,
   onSubmit,
   isSubmitting,
@@ -29,7 +31,13 @@ export default function TaskForm({
   const [description, setDescription] = useState(task?.description || '');
   const [status, setStatus] = useState(task?.status || 'todo');
   const [priority, setPriority] = useState(task?.priority || 'medium');
-  const [assignee, setAssignee] = useState(task?.assignee?.id || '');
+  const getAssigneeId = (assignee: any) => {
+    if (!assignee) return '';
+    if (typeof assignee === 'string') return assignee;
+    return assignee._id || assignee.id || '';
+  };
+
+  const [assignee, setAssignee] = useState(getAssigneeId(task?.assignee));
   const [labelsInput, setLabelsInput] = useState(task?.labels?.join(', ') || '');
   const [dueDate, setDueDate] = useState(task?.dueDate ? task.dueDate.substring(0, 10) : '');
 
@@ -146,19 +154,33 @@ export default function TaskForm({
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 bg-white disabled:bg-gray-50 disabled:text-gray-500"
         >
           <option value="">Unassigned</option>
-          {projectMembers.map((member) => {
-            const userId = member.user ? member.user.id : (member as any).id;
-            const userName = member.user ? member.user.name : (member as any).name;
-            const userEmail = member.user ? member.user.email : (member as any).email;
-            return (
-              <option key={userId} value={userId}>
-                {userName} ({userEmail})
-              </option>
-            );
-          })}
+          {/* Project Owner (always an admin, never a viewer) */}
+          {project && (
+            <option value={(project.owner as any)._id || project.owner}>
+              {(project.owner as any).name || 'Project Owner'} ({(project.owner as any).email || 'owner'})
+            </option>
+          )}
+          {projectMembers
+            .filter((member) => member.role !== 'viewer')
+            .filter((member) => {
+              // Ensure we don't duplicate the owner if they happen to be in members list
+              const userId = member.user ? member.user.id : (member as any).id;
+              const ownerId = (project.owner as any)._id || project.owner;
+              return userId !== ownerId;
+            })
+            .map((member) => {
+              const userId = member.user ? member.user.id : (member as any).id;
+              const userName = member.user ? member.user.name : (member as any).name;
+              const userEmail = member.user ? member.user.email : (member as any).email;
+              return (
+                <option key={userId} value={userId}>
+                  {userName} ({userEmail})
+                </option>
+              );
+            })}
         </select>
         <p className="mt-1 text-xs text-gray-500">
-          Only project members can be assigned to tasks.
+          Only active project members and admins can be assigned to tasks. Viewers cannot be assigned.
         </p>
       </div>
 

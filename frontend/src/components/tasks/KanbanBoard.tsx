@@ -11,9 +11,19 @@ interface KanbanBoardProps {
   onTaskClick: (task: Task) => void;
   onError: (msg: string) => void;
   readOnly?: boolean;
+  userRole?: string | null;
+  userId?: string;
 }
 
-export default function KanbanBoard({ projectId, tasks, onTaskClick, onError, readOnly = false }: KanbanBoardProps) {
+export default function KanbanBoard({ 
+  projectId, 
+  tasks, 
+  onTaskClick, 
+  onError, 
+  readOnly = false,
+  userRole,
+  userId,
+}: KanbanBoardProps) {
   const updateMutation = useUpdateTask(projectId);
 
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
@@ -67,6 +77,8 @@ export default function KanbanBoard({ projectId, tasks, onTaskClick, onError, re
             onStatusChange={handleStatusChange}
             onDrop={handleStatusChange}
             readOnly={readOnly}
+            userRole={userRole}
+            userId={userId}
           />
         </div>
       ))}

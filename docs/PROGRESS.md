@@ -4,9 +4,24 @@
 Module 3 — Collaboration, Permissions & Analytics
 
 ## Status
-Module 3 Socket.IO Integration is complete. Proceeding to Notifications API & UI.
+Module 3 is fully implemented, hardened, and verified. Proceeding to Module 4 — AI Project Health Analysis, Testing & Deployment.
 
 ## Completed
+- **M3-T10 — Module 3 Integration, Testing & Hardening**
+  - Conducted full specification and API audit against `MODULE_3.md` and `API_SPEC.md`.
+  - Hardened RBAC enforcement for task editing (Members can only edit tasks they are assigned to or created).
+  - Fixed TypeScript interface mismatches for `UserBasic` populated objects.
+  - Corrected self-notification prevention filter by explicitly evaluating string IDs.
+  - Integrated missing Activity feed hooks for task updates and member additions.
+  - Verified no cross-project access leakage exists and authentication strictly utilizes HttpOnly cookies.
+  - Passed production build and TypeScript checks cleanly.
+- **M3-T09 — Notifications API & UI**
+  - Created `Notification` model to store targeted user alerts.
+  - Implemented `notificationController` with strict user-isolation.
+  - Configured `notificationService` to automatically generate notifications for task assignments and mentions.
+  - Integrated Socket.IO for real-time notification push to active users.
+  - Built `NotificationBell` UI component with badge indicator.
+  - Built `NotificationList` popover for marking notifications as read/unread.
 - **M3-T08 — Socket.IO Integration & Real-time Sync**
   - Integrated `socket.io` into Express backend.
   - Implemented secure, JWT cookie-based Socket authentication matching the REST API.
@@ -77,7 +92,7 @@ Module 3 Socket.IO Integration is complete. Proceeding to Notifications API & UI
 - M1-T02 authentication flow completed successfully.
 
 ## Next
-1. M3-T09 — Notifications API & UI
+1. M4-T01 — Create Module 4 Specification & Architecture
 
 ## Completed
 - **M3-T06 — Comments & Activity UI**

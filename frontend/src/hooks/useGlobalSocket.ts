@@ -17,10 +17,16 @@ export function useGlobalSocket() {
     const socket = connectSocket();
 
     // The backend automatically joins `user_<userId>` upon connection and authentication.
-    const onNotificationCreated = () => {
+    const onNotificationCreated = (data: any) => {
+      console.log('Socket: Received notification.created', data);
       // Invalidate notifications cache to fetch the latest
       queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     };
+
+    socket.on('connect', () => console.log('Socket: Connected!'));
+    socket.on('connect_error', (err) => console.error('Socket: Connection error:', err.message));
+    socket.on('disconnect', () => console.log('Socket: Disconnected.'));
+    socket.on('error', (err) => console.error('Socket: Error event:', err));
 
     socket.on('notification.created', onNotificationCreated);
 

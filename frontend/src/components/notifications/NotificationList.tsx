@@ -55,7 +55,7 @@ export default function NotificationList({ onClose }: NotificationListProps) {
 
   const getTargetUrl = (notif: Notification) => {
     const taskId = notif.type === 'mention' && notif.comment ? notif.comment.task : notif.referenceId;
-    return `/app/projects/${notif.project._id}/tasks/${taskId}`;
+    return `/app/projects/${notif.project._id}/tasks?taskId=${taskId}`;
   };
 
   return (

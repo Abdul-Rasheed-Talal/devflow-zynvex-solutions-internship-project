@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
+import Activity from '../models/Activity.js';
 import { emitProjectEvent } from '../socket/events.js';
 import { createTaskAssignmentNotification, createTaskUpdateNotification } from '../utils/notificationService.js';
 
@@ -28,12 +29,14 @@ function pickFields(source, allowed) {
 }
 
 /**
- * Helper to check if a user is part of the project (owner or member)
+ * Helper to check if a user is part of the project and eligible for task assignment
  */
-function isProjectParticipant(project, userIdStr) {
+function isAssignableParticipant(project, userIdStr) {
   if (project.owner.toString() === userIdStr) return true;
   return project.members.some((m) => {
     const memberId = m.user ? m.user.toString() : m.toString();
+    // If members are objects with roles, ensure role is not 'viewer'
+    if (m.role && m.role === 'viewer') return false;
     return memberId === userIdStr;
   });
 }
@@ -86,8 +89,8 @@ export const createTask = async (req, res, next) => {
         return next(err);
       }
 
-      if (!isProjectParticipant(project, taskData.assignee.toString())) {
-        const err = new Error('Assignee must be a project member or owner');
+      if (!isAssignableParticipant(project, taskData.assignee.toString())) {
+        const err = new Error('Assignee must be a project member or admin (viewers cannot be assigned tasks)');
         err.statusCode = 403;
         return next(err);
       }
@@ -160,6 +163,28 @@ export const updateTask = async (req, res, next) => {
       return next(err);
     }
 
+    // Role-based access control for individual tasks
+    const isOwner = project.owner.toString() === req.user.id;
+    let isAdmin = false;
+    if (!isOwner) {
+      const member = project.members.find(m => {
+        const uid = m.user ? m.user.toString() : m.toString();
+        return uid === req.user.id;
+      });
+      if (member && member.role === 'admin') isAdmin = true;
+    }
+
+    if (!isOwner && !isAdmin) {
+      // Must be a member. Members can only update if they are the assignee or creator.
+      const isAssignee = task.assignee && task.assignee.toString() === req.user.id;
+      const isCreator = task.creator && task.creator.toString() === req.user.id;
+      if (!isAssignee && !isCreator) {
+        const err = new Error('Members can only update tasks they are assigned to or created');
+        err.statusCode = 403;
+        return next(err);
+      }
+    }
+
     // Validate assignee if supplied
     if (updates.assignee !== undefined) {
       if (updates.assignee === null || updates.assignee === '') {
@@ -179,16 +204,28 @@ export const updateTask = async (req, res, next) => {
           return next(err);
         }
 
-        if (!isProjectParticipant(project, updates.assignee.toString())) {
-          const err = new Error('Assignee must be a project member or owner');
+        if (!isAssignableParticipant(project, updates.assignee.toString())) {
+          const err = new Error('Assignee must be a project member or admin (viewers cannot be assigned tasks)');
           err.statusCode = 403;
           return next(err);
         }
       }
     }
 
+    const oldStatus = task.status;
+    
     Object.assign(task, updates);
     await task.save();
+
+    if (updates.status && updates.status !== oldStatus) {
+      await Activity.create({
+        project: project._id,
+        task: task._id,
+        actor: req.user.id,
+        action: 'task_status_changed',
+        metadata: { oldStatus, newStatus: updates.status },
+      });
+    }
 
     const populatedTask = await Task.findById(task._id)
       .populate('creator', 'name email createdAt updatedAt')
@@ -227,9 +264,31 @@ export const updateTask = async (req, res, next) => {
  */
 export const deleteTask = async (req, res, next) => {
   try {
+    const project = req.project;
     const projectId = req.task.project;
     const taskId = req.task._id;
     
+    // Role-based access control for deletion
+    const isOwner = project.owner.toString() === req.user.id;
+    let isAdmin = false;
+    if (!isOwner) {
+      const member = project.members.find(m => {
+        const uid = m.user ? m.user.toString() : m.toString();
+        return uid === req.user.id;
+      });
+      if (member && member.role === 'admin') isAdmin = true;
+    }
+
+    if (!isOwner && !isAdmin) {
+      // Members can only delete tasks they created
+      const isCreator = req.task.creator && req.task.creator.toString() === req.user.id;
+      if (!isCreator) {
+        const err = new Error('Members can only delete tasks they created');
+        err.statusCode = 403;
+        return next(err);
+      }
+    }
+
     await req.task.deleteOne();
 
     emitProjectEvent(projectId, 'task.deleted', { projectId, taskId });

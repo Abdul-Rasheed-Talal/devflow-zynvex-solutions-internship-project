@@ -56,7 +56,7 @@ export const createMentionNotifications = async (project, task, actorId, comment
 export const createTaskAssignmentNotification = async (project, task, actorId) => {
   if (!task.assignee) return;
 
-  const assigneeIdStr = task.assignee.toString();
+  const assigneeIdStr = task.assignee._id ? task.assignee._id.toString() : task.assignee.toString();
   const actorIdStr = actorId.toString();
 
   if (assigneeIdStr === actorIdStr) return; // Don't notify self
@@ -69,7 +69,7 @@ export const createTaskAssignmentNotification = async (project, task, actorId) =
     referenceId: task._id,
   });
 
-  emitUserEvent(task.assignee, 'notification.created', { notificationId: notif._id });
+  emitUserEvent(task.assignee._id || task.assignee, 'notification.created', { notificationId: notif._id });
 };
 
 /**
@@ -79,7 +79,7 @@ export const createTaskAssignmentNotification = async (project, task, actorId) =
 export const createTaskUpdateNotification = async (project, task, actorId) => {
   if (!task.assignee) return;
 
-  const assigneeIdStr = task.assignee.toString();
+  const assigneeIdStr = task.assignee._id ? task.assignee._id.toString() : task.assignee.toString();
   const actorIdStr = actorId.toString();
 
   if (assigneeIdStr === actorIdStr) return; // Don't notify self
@@ -92,5 +92,5 @@ export const createTaskUpdateNotification = async (project, task, actorId) => {
     referenceId: task._id,
   });
 
-  emitUserEvent(task.assignee, 'notification.created', { notificationId: notif._id });
+  emitUserEvent(task.assignee._id || task.assignee, 'notification.created', { notificationId: notif._id });
 };

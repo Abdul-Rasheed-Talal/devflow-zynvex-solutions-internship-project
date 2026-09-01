@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '../../hooks/useTaskQueries';
 import { useProject, useProjectMembers } from '../../hooks/useProjectQueries';
 import KanbanBoard from '../../components/tasks/KanbanBoard';
@@ -11,6 +11,7 @@ import type { ApiError } from '../../types/auth';
 
 export default function ProjectTasksPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuthStore();
 
   const { data: project, isLoading: isProjectLoading, error: projectError } = useProject(projectId!);
@@ -30,6 +31,21 @@ export default function ProjectTasksPage() {
   const projectMembers = membersResponse || [];
   const userRole = getProjectRole(project, user?.id);
   const hasTaskEditPermission = canEditTasks(userRole);
+
+  useEffect(() => {
+    if (tasks && tasks.length > 0 && searchParams.has('taskId') && !editingTask) {
+      const taskId = searchParams.get('taskId');
+      const targetTask = tasks.find((t) => t._id === taskId);
+      if (targetTask) {
+        setEditingTask(targetTask);
+        
+        // Remove taskId from URL without triggering a reload
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('taskId');
+        setSearchParams(newParams, { replace: true });
+      }
+    }
+  }, [tasks, searchParams, editingTask, setSearchParams]);
 
   const handleCreate = (data: CreateTaskInput | UpdateTaskInput) => {
     setApiError(null);
@@ -169,6 +185,7 @@ export default function ProjectTasksPage() {
         <div className="bg-white border border-gray-200 rounded p-6 max-w-2xl">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Create New Task</h2>
           <TaskForm
+            project={project}
             projectMembers={projectMembers}
             onSubmit={handleCreate}
             isSubmitting={createMutation.isPending}
@@ -192,11 +209,17 @@ export default function ProjectTasksPage() {
           </div>
           <TaskForm
             task={editingTask}
+            project={project}
             projectMembers={projectMembers}
             onSubmit={handleUpdate}
             isSubmitting={updateMutation.isPending}
             onCancel={() => setEditingTask(null)}
-            readOnly={!hasTaskEditPermission}
+            readOnly={
+              !hasTaskEditPermission || 
+              (userRole === 'member' && 
+               (editingTask.assignee as any)?._id !== user?.id && 
+               (editingTask.creator as any)?._id !== user?.id)
+            }
           />
         </div>
       ) : tasks && tasks.length > 0 ? (
@@ -207,6 +230,8 @@ export default function ProjectTasksPage() {
             onTaskClick={setEditingTask}
             onError={setApiError}
             readOnly={!hasTaskEditPermission}
+            userRole={userRole}
+            userId={user?.id}
           />
         </div>
       ) : (
