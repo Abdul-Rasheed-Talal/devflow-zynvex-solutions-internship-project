@@ -15,13 +15,13 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const hasGitHubAuth = !!import.meta.env.VITE_GITHUB_CLIENT_ID;
+
   const handleGitHubLink = () => {
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    if (!clientId) {
-      setMessage({ type: 'error', text: 'GitHub Client ID is missing from environment variables' });
-      return;
+    if (clientId) {
+      window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo user:email`;
     }
-    window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo user:email`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -175,13 +175,15 @@ export default function SettingsPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
               Connected
             </span>
-          ) : (
+          ) : hasGitHubAuth ? (
             <button
               onClick={handleGitHubLink}
               className="px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition-colors"
             >
               Connect GitHub
             </button>
+          ) : (
+            <span className="text-sm text-gray-400">OAuth Not Configured</span>
           )}
         </div>
       </div>

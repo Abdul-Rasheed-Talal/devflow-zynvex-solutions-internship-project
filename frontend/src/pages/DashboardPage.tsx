@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { data: projects, isLoading: projectsLoading } = useProjects();
+  const { isLoading: projectsLoading } = useProjects();
   const { data: analytics, isLoading: analyticsLoading } = useGlobalAnalytics();
 
   const activeProjectsCount = analytics?.activeProjectsCount || 0;
@@ -87,7 +87,7 @@ export default function DashboardPage() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {analytics.statusChartData.map((entry, index) => (
+                    {analytics.statusChartData.map((_: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
