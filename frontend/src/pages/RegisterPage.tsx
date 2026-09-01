@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [accountType, setAccountType] = useState<'personal' | 'company'>('personal');
   
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +32,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      await authService.register({ name, email, password });
+      await authService.register({ name, email, password, accountType });
       setIsSuccess(true);
     } catch (err: unknown) {
       const apiError = err as ApiError;
@@ -74,6 +75,34 @@ export default function RegisterPage() {
         )}
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
+            <div className="flex gap-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="accountType"
+                  value="personal"
+                  checked={accountType === 'personal'}
+                  onChange={(e) => setAccountType(e.target.value as 'personal' | 'company')}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <span className="ml-2 text-sm text-gray-700">Personal</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="accountType"
+                  value="company"
+                  checked={accountType === 'company'}
+                  onChange={(e) => setAccountType(e.target.value as 'personal' | 'company')}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                />
+                <span className="ml-2 text-sm text-gray-700">Company (Workspace)</span>
+              </label>
+            </div>
+          </div>
+
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
               Full name

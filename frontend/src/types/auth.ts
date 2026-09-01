@@ -2,6 +2,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  accountType: 'personal' | 'company';
+  bio?: string;
+  skills?: string[];
+  avatarUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,4 +26,4 @@ export interface ApiError extends Error {
 }
 
 export type LoginRequest = Pick<User, 'email'> & { password: string };
-export type RegisterRequest = Pick<User, 'name' | 'email'> & { password: string };
+export type RegisterRequest = Pick<User, 'name' | 'email' | 'accountType'> & { password: string };

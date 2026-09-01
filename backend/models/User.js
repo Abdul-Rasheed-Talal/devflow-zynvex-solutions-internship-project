@@ -25,6 +25,22 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Password hash is required'],
       select: false, // Never returned in queries by default
     },
+    accountType: {
+      type: String,
+      enum: ['personal', 'company'],
+      default: 'personal',
+    },
+    bio: {
+      type: String,
+      maxlength: [500, 'Bio must not exceed 500 characters'],
+    },
+    skills: {
+      type: [String],
+      default: [],
+    },
+    avatarUrl: {
+      type: String,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt automatically
@@ -40,6 +56,10 @@ userSchema.methods.toSafeObject = function () {
     id: this._id,
     name: this.name,
     email: this.email,
+    accountType: this.accountType,
+    bio: this.bio,
+    skills: this.skills,
+    avatarUrl: this.avatarUrl,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };

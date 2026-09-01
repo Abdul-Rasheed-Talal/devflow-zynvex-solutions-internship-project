@@ -10,7 +10,7 @@ import env from '../config/env.js';
  */
 export const registerUser = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, accountType } = req.body;
 
     // 1. Basic validation
     if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -56,6 +56,7 @@ export const registerUser = async (req, res, next) => {
       name: name.trim(),
       email: normalizedEmail,
       passwordHash,
+      accountType: accountType === 'company' ? 'company' : 'personal',
     });
 
     // We rely on Mongoose validation here to catch any email regex issues, etc.
