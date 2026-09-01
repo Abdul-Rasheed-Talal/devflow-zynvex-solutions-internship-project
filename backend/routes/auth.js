@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registerUser, loginUser, getMe, logoutUser } from '../controllers/authController.js';
+import { registerUser, loginUser, getMe, logoutUser, githubCallback } from '../controllers/authController.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -23,5 +23,10 @@ router.get('/me', requireAuth, getMe);
 // @desc    Logout user (client clears token)
 // @access  Private
 router.post('/logout', requireAuth, logoutUser);
+
+// @route   POST /api/auth/github/callback
+// @desc    Handle GitHub OAuth Callback
+// @access  Public
+router.post('/github/callback', githubCallback);
 
 export default router;

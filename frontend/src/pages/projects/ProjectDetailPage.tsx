@@ -7,6 +7,7 @@ import ProjectMembers from '../../components/projects/ProjectMembers';
 import ActivityFeed from '../../components/activity/ActivityFeed';
 import AuditLogFeed from '../../components/projects/AuditLogFeed';
 import ProjectAnalyticsChart from '../../components/analytics/ProjectAnalyticsChart';
+import ProjectGitHubTab from '../../components/projects/ProjectGitHubTab';
 import { useProjectSocket } from '../../hooks/useProjectSocket';
 import { useAuthStore } from '../../stores/authStore';
 import { getProjectRole, canEditProject, canDeleteProject } from '../../lib/permissions';
@@ -269,6 +270,10 @@ export default function ProjectDetailPage() {
           currentUserRole={userRole}
           ownerId={project.owner}
         />
+      )}
+
+      {project.githubRepo && (
+        <ProjectGitHubTab projectId={projectId!} repoName={project.githubRepo} />
       )}
 
       <ProjectAnalyticsChart projectId={projectId!} />

@@ -27,6 +27,7 @@ export default function ProjectForm({ project, onSubmit, isSubmitting, error }: 
   const [priority, setPriority] = useState<ProjectPriority>(project?.priority ?? 'medium');
   const [startDate, setStartDate] = useState(project?.startDate?.split('T')[0] ?? '');
   const [dueDate, setDueDate] = useState(project?.dueDate?.split('T')[0] ?? '');
+  const [githubRepo, setGithubRepo] = useState(project?.githubRepo ?? '');
   const [validationError, setValidationError] = useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent) {
@@ -59,6 +60,7 @@ export default function ProjectForm({ project, onSubmit, isSubmitting, error }: 
       priority,
       startDate: startDate || undefined,
       dueDate: dueDate || undefined,
+      githubRepo: githubRepo.trim() || undefined,
     };
 
     onSubmit(data);
@@ -146,6 +148,26 @@ export default function ProjectForm({ project, onSubmit, isSubmitting, error }: 
               <option key={p.value} value={p.value}>{p.label}</option>
             ))}
           </select>
+        </div>
+      </div>
+
+      {/* GitHub Repo */}
+      <div>
+        <label htmlFor="githubRepo" className="block text-sm font-medium text-gray-700 mb-1">
+          GitHub Repository (optional)
+        </label>
+        <div className="flex rounded shadow-sm">
+          <span className="inline-flex items-center px-3 rounded-l border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+            github.com/
+          </span>
+          <input
+            type="text"
+            id="githubRepo"
+            value={githubRepo}
+            onChange={(e) => setGithubRepo(e.target.value)}
+            placeholder="owner/repo"
+            className="flex-1 min-w-0 block w-full px-3 py-2 rounded-r border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+          />
         </div>
       </div>
 

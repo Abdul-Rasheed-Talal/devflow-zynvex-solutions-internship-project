@@ -13,6 +13,10 @@ const projectSchema = new mongoose.Schema(
       trim: true,
       maxlength: [1000, 'Project description must not exceed 1000 characters'],
     },
+    githubRepo: {
+      type: String,
+      trim: true,
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

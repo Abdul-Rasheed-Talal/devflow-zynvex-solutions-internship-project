@@ -41,6 +41,18 @@ const userSchema = new mongoose.Schema(
     avatarUrl: {
       type: String,
     },
+    githubId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    githubUsername: {
+      type: String,
+    },
+    githubAccessToken: {
+      type: String,
+      select: false,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt automatically
@@ -60,6 +72,7 @@ userSchema.methods.toSafeObject = function () {
     bio: this.bio,
     skills: this.skills,
     avatarUrl: this.avatarUrl,
+    githubUsername: this.githubUsername,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };

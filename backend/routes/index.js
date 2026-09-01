@@ -8,6 +8,7 @@ import notificationRoutes from './notifications.js';
 import userRoutes from './users.js';
 import analyticsRoutes from './analytics.js';
 import announcementRoutes from './announcements.js';
+import githubRoutes from './github.js';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/notifications', notificationRoutes);
 router.use('/users', userRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/announcements', announcementRoutes);
+router.use('/', githubRoutes); // Mounted at root since route is /projects/:projectId/github
 
 export default router;

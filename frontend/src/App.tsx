@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import GitHubCallback from './pages/auth/GitHubCallback';
 import ProjectsPage from './pages/projects/ProjectsPage';
 import NewProjectPage from './pages/projects/NewProjectPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
@@ -57,6 +58,7 @@ export default function App() {
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/auth/github/callback" element={<GitHubCallback />} />
           </Route>
 
           {/* Fallback */}

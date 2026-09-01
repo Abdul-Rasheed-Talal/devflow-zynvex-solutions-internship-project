@@ -13,6 +13,7 @@ export interface Project {
   priority: ProjectPriority;
   startDate?: string;
   dueDate?: string;
+  githubRepo?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,6 +25,7 @@ export interface CreateProjectInput {
   priority?: ProjectPriority;
   startDate?: string;
   dueDate?: string;
+  githubRepo?: string;
 }
 
 export interface UpdateProjectInput {

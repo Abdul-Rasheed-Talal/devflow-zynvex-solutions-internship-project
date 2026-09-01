@@ -194,3 +194,157 @@ export const logoutUser = (req, res, next) => {
     message: 'Logged out successfully'
   });
 };
+
+/**
+ * @desc    Handle GitHub OAuth callback
+ * @route   POST /api/auth/github/callback
+ * @access  Public
+ */
+export const githubCallback = async (req, res, next) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ success: false, message: 'GitHub code is required' });
+    }
+
+    // 1. Exchange code for access token
+    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: env.githubClientId || process.env.GITHUB_CLIENT_ID,
+        client_secret: env.githubClientSecret || process.env.GITHUB_CLIENT_SECRET,
+        code,
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    if (tokenData.error) {
+      return res.status(400).json({ success: false, message: tokenData.error_description || tokenData.error });
+    }
+
+    const accessToken = tokenData.access_token;
+
+    // 2. Fetch GitHub user profile
+    const userResponse = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const githubUser = await userResponse.json();
+    if (!githubUser.id) {
+      return res.status(400).json({ success: false, message: 'Failed to fetch GitHub profile' });
+    }
+
+    // 3. Determine if user is already logged in (Linking Flow)
+    const tokenCookie = req.cookies?.devflow_access_token;
+    let currentUserId = null;
+    
+    if (tokenCookie) {
+      try {
+        const decoded = jwt.verify(tokenCookie, env.jwtSecret);
+        currentUserId = decoded.id;
+      } catch (err) {
+        // Token invalid/expired, ignore and fall back to login flow
+      }
+    }
+
+    if (currentUserId) {
+      // LINKING FLOW
+      const user = await User.findById(currentUserId);
+      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+      // Check if this GitHub account is already linked to another user
+      const existingGitUser = await User.findOne({ githubId: githubUser.id.toString(), _id: { $ne: currentUserId } });
+      if (existingGitUser) {
+        return res.status(400).json({ success: false, message: 'This GitHub account is already linked to another DevFlow account.' });
+      }
+
+      user.githubId = githubUser.id.toString();
+      user.githubUsername = githubUser.login;
+      user.githubAccessToken = accessToken;
+      
+      // Update avatar if they don't have one
+      if (!user.avatarUrl && githubUser.avatar_url) {
+        user.avatarUrl = githubUser.avatar_url;
+      }
+      
+      await user.save();
+      
+      return res.status(200).json({
+        success: true,
+        data: user.toSafeObject(),
+        message: 'GitHub account linked successfully'
+      });
+    }
+
+    // LOGIN / REGISTER FLOW
+    let user = await User.findOne({ githubId: githubUser.id.toString() });
+
+    if (!user) {
+      // Check if email matches existing account to link implicitly
+      const emailRes = await fetch('https://api.github.com/user/emails', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const emails = await emailRes.json();
+      const primaryEmailObj = emails.find(e => e.primary) || emails[0];
+      const email = primaryEmailObj ? primaryEmailObj.email : `${githubUser.login}@github.devflow.local`;
+
+      user = await User.findOne({ email });
+
+      if (user) {
+        // Link to existing user implicitly
+        user.githubId = githubUser.id.toString();
+        user.githubUsername = githubUser.login;
+        user.githubAccessToken = accessToken;
+        if (!user.avatarUrl) user.avatarUrl = githubUser.avatar_url;
+        await user.save();
+      } else {
+        // Register new user
+        // Generate random password hash since they use OAuth
+        const randomPass = await bcrypt.hash(Math.random().toString(36).slice(-8) + 'DevFlow!', 10);
+        user = new User({
+          name: githubUser.name || githubUser.login,
+          email,
+          passwordHash: randomPass,
+          githubId: githubUser.id.toString(),
+          githubUsername: githubUser.login,
+          githubAccessToken: accessToken,
+          avatarUrl: githubUser.avatar_url,
+          accountType: 'personal',
+        });
+        await user.save();
+      }
+    } else {
+      // Update access token just in case
+      user.githubAccessToken = accessToken;
+      user.githubUsername = githubUser.login;
+      await user.save();
+    }
+
+    // 4. Generate JWT
+    const token = jwt.sign({ id: user._id.toString() }, env.jwtSecret, {
+      expiresIn: '1d',
+    });
+
+    res.cookie('devflow_access_token', token, {
+      httpOnly: true,
+      secure: env.nodeEnv === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+      path: '/'
+    });
+
+    res.status(200).json({
+      success: true,
+      data: user.toSafeObject(),
+      message: 'Logged in with GitHub'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
