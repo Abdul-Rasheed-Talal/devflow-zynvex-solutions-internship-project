@@ -3,6 +3,7 @@ import { useProjectMembers, useAddMember, useRemoveMember, useUpdateMemberRole }
 import { canManageMembers, canManageTargetRole } from '../../lib/permissions';
 import type { ProjectMember, ProjectRole } from '../../types/project';
 import type { ApiError } from '../../types/auth';
+import UserProfileModal from '../team/UserProfileModal';
 
 interface ProjectMembersProps {
   projectId: string;
@@ -46,6 +47,7 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
   const [removeError, setRemoveError] = useState<string | null>(null);
   const [roleError, setRoleError] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<ProjectMember | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   // Loading state
   if (isLoading) {
@@ -228,14 +230,33 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
 
                 return (
                   <li key={member.user.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold shrink-0">
-                        {member.user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{member.user.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{member.user.email}</p>
-                      </div>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUser(member.user)}
+                        className="flex items-center gap-3 text-left hover:bg-gray-50 rounded-md p-1 transition-colors"
+                      >
+                        {member.user.avatarUrl ? (
+                          <img src={member.user.avatarUrl} alt="" className="h-8 w-8 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold shrink-0">
+                            {member.user.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate hover:text-blue-600 transition-colors flex items-center gap-1">
+                            {member.user.name}
+                            {member.user.accountType === 'company' && (
+                              <span className="text-blue-500" title="Verified Company Account">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">{member.user.email}</p>
+                        </div>
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0">
@@ -305,6 +326,8 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
           </div>
         </div>
       )}
+
+      <UserProfileModal user={selectedUser} onClose={() => setSelectedUser(null)} />
     </>
   );
 }

@@ -1,4 +1,6 @@
 import User from '../models/User.js';
+import Project from '../models/Project.js';
+import mongoose from 'mongoose';
 
 /**
  * @desc    Update current user profile
@@ -59,6 +61,48 @@ export const updateProfile = async (req, res, next) => {
     if (error.name === 'ValidationError') {
       error.statusCode = 400;
     }
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get team members (users in shared projects)
+ * @route   GET /api/users/team
+ * @access  Private
+ */
+export const getTeamMembers = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    // Find all projects the user is part of (owner or member)
+    const projects = await Project.find({
+      $or: [{ owner: userId }, { 'members.user': userId }],
+    });
+
+    if (projects.length === 0) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    // Collect all unique user IDs from these projects
+    const userIds = new Set();
+    
+    projects.forEach((p) => {
+      userIds.add(p.owner.toString());
+      p.members.forEach((m) => {
+        if (m.user) userIds.add(m.user.toString());
+      });
+    });
+
+    // Fetch user profiles for these IDs
+    const teamMembers = await User.find({
+      _id: { $in: Array.from(userIds) },
+    }).select('name email avatarUrl bio skills accountType');
+
+    res.status(200).json({
+      success: true,
+      data: teamMembers,
+    });
+  } catch (error) {
     next(error);
   }
 };

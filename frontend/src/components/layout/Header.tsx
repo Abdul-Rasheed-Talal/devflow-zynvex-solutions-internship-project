@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import NotificationBell from '../notifications/NotificationBell';
 
@@ -20,9 +21,15 @@ export default function Header() {
 
         <div className="h-6 w-px bg-gray-200 mx-2"></div>
 
-        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold shrink-0">
-          {user?.name?.charAt(0).toUpperCase()}
-        </div>
+        <Link to="/app/settings" className="hover:opacity-80 transition-opacity">
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt="Profile" className="h-8 w-8 rounded-full object-cover" />
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold shrink-0">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </Link>
 
         <div className="h-6 w-px bg-gray-200 mx-2"></div>
 

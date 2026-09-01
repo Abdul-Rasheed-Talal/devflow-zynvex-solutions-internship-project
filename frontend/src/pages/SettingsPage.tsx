@@ -5,7 +5,7 @@ import { ApiError } from '../types/auth';
 
 export default function SettingsPage() {
   const user = useAuthStore((state: any) => state.user);
-  const setUser = useAuthStore((state: any) => state.setUser);
+  const updateUser = useAuthStore((state: any) => state.updateUser);
 
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -28,7 +28,7 @@ export default function SettingsPage() {
         skills: skillsArray,
         avatarUrl,
       });
-      setUser(res.data);
+      updateUser(res.data);
       setMessage({ type: 'success', text: 'Profile updated successfully.' });
     } catch (err) {
       const apiError = err as ApiError;

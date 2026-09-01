@@ -7,6 +7,7 @@ import commentRoutes from './comments.js';
 import notificationRoutes from './notifications.js';
 import userRoutes from './users.js';
 import analyticsRoutes from './analytics.js';
+import announcementRoutes from './announcements.js';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/comments', commentRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/users', userRoutes);
 router.use('/analytics', analyticsRoutes);
+router.use('/announcements', announcementRoutes);
 
 export default router;

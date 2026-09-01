@@ -5,6 +5,8 @@ export default function Sidebar() {
   const navItems = [
     { name: 'Dashboard', path: '/app/dashboard' },
     { name: 'Projects', path: '/app/projects' },
+    { name: 'Team', path: '/app/team' },
+    { name: 'Announcements', path: '/app/announcements' },
     { name: 'Settings', path: '/app/settings' },
   ];
 
