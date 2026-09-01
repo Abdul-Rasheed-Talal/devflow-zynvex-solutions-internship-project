@@ -6,6 +6,7 @@ import ProjectForm from '../../components/projects/ProjectForm';
 import ProjectMembers from '../../components/projects/ProjectMembers';
 import ActivityFeed from '../../components/activity/ActivityFeed';
 import AuditLogFeed from '../../components/projects/AuditLogFeed';
+import ProjectAnalyticsChart from '../../components/analytics/ProjectAnalyticsChart';
 import { useProjectSocket } from '../../hooks/useProjectSocket';
 import { useAuthStore } from '../../stores/authStore';
 import { getProjectRole, canEditProject, canDeleteProject } from '../../lib/permissions';
@@ -269,6 +270,8 @@ export default function ProjectDetailPage() {
           ownerId={project.owner}
         />
       )}
+
+      <ProjectAnalyticsChart projectId={projectId!} />
 
       <ActivityFeed projectId={projectId!} />
 
