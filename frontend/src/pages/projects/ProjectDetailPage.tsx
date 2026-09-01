@@ -262,11 +262,13 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <ProjectMembers
-        projectId={projectId!}
-        currentUserRole={userRole}
-        ownerId={project.owner}
-      />
+      {user?.accountType === 'company' && (
+        <ProjectMembers
+          projectId={projectId!}
+          currentUserRole={userRole}
+          ownerId={project.owner}
+        />
+      )}
 
       <ActivityFeed projectId={projectId!} />
 

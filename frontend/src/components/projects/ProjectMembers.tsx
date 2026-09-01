@@ -41,7 +41,7 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
   const updateRoleMutation = useUpdateMemberRole(projectId);
 
   const [showAddForm, setShowAddForm] = useState(false);
-  const [userIdInput, setUserIdInput] = useState('');
+  const [emailInput, setEmailInput] = useState('');
   const [addError, setAddError] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
   const [roleError, setRoleError] = useState<string | null>(null);
@@ -90,21 +90,21 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
     e.preventDefault();
     setAddError(null);
 
-    const trimmed = userIdInput.trim();
+    const trimmed = emailInput.trim();
     if (!trimmed) {
-      setAddError('Please enter a user ID.');
+      setAddError('Please enter an email address.');
       return;
     }
 
-    // Basic ObjectId format check (24 hex characters)
-    if (!/^[a-f0-9]{24}$/i.test(trimmed)) {
-      setAddError('Invalid user ID format. A user ID is a 24-character hexadecimal string.');
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setAddError('Invalid email format.');
       return;
     }
 
-    addMutation.mutate({ userId: trimmed }, {
+    addMutation.mutate({ email: trimmed }, {
       onSuccess: () => {
-        setUserIdInput('');
+        setEmailInput('');
         setShowAddForm(false);
         setAddError(null);
       },
@@ -179,15 +179,15 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
                 </div>
               )}
               <div>
-                <label htmlFor="add-member-user-id" className="block text-sm font-medium text-gray-700 mb-1">
-                  User ID
+                <label htmlFor="add-member-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
                 </label>
                 <input
-                  id="add-member-user-id"
-                  type="text"
-                  value={userIdInput}
-                  onChange={(e) => setUserIdInput(e.target.value)}
-                  placeholder="e.g. 507f1f77bcf86cd799439011"
+                  id="add-member-email"
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="e.g. user@example.com"
                   autoFocus
                   className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -205,7 +205,7 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setShowAddForm(false); setAddError(null); setUserIdInput(''); }}
+                  onClick={() => { setShowAddForm(false); setAddError(null); setEmailInput(''); }}
                   disabled={addMutation.isPending}
                   className="px-3 py-1.5 bg-white text-gray-700 text-xs font-medium rounded border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >

@@ -211,21 +211,33 @@ export const getProjectMembers = async (req, res, next) => {
  */
 export const addProjectMember = async (req, res, next) => {
   try {
-    const { userId, role } = req.body;
+    const { email, role } = req.body;
     const project = req.project;
 
-    if (!userId || !isValidObjectId(userId)) {
-      const err = new Error('Invalid user ID');
+    // Security: Only company accounts can add members
+    const requestUser = await User.findById(req.user.id);
+    if (!requestUser || requestUser.accountType !== 'company') {
+      const err = new Error('Only Company accounts can add team members.');
+      err.statusCode = 403;
+      return next(err);
+    }
+
+    if (!email || typeof email !== 'string') {
+      const err = new Error('Email is required');
       err.statusCode = 400;
       return next(err);
     }
 
-    const user = await User.findById(userId);
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+    
     if (!user) {
       const err = new Error('User not found');
       err.statusCode = 404;
       return next(err);
     }
+
+    const userId = user._id;
 
     if (project.owner.toString() === userId.toString()) {
       const err = new Error('Project owner cannot be added as a member');

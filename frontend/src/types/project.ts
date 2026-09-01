@@ -94,7 +94,7 @@ export interface ProjectMemberListResponse {
 }
 
 export interface AddMemberInput {
-  userId: string;
+  email: string;
 }
 
 export interface UpdateMemberRoleInput {

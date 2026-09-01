@@ -46,17 +46,19 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="bg-white p-6 border border-gray-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 className="text-sm font-medium text-gray-900">Team Members</h3>
-            <p className="mt-2 text-sm text-gray-500">
-              Teams are configured per project.
-            </p>
+        {user?.accountType === 'company' && (
+          <div className="bg-white p-6 border border-gray-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-900">Team Members</h3>
+              <p className="mt-2 text-sm text-gray-500">
+                Teams are configured per project.
+              </p>
+            </div>
+            <Link to="/app/projects" className="mt-4 text-xs text-blue-600 hover:underline">
+              Manage project members &rarr;
+            </Link>
           </div>
-          <Link to="/app/projects" className="mt-4 text-xs text-blue-600 hover:underline">
-            Manage project members &rarr;
-          </Link>
-        </div>
+        )}
       </div>
 
     </div>
