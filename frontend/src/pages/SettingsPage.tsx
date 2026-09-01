@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '../stores/authStore';
 import { userService } from '../services/userService';
 import { ApiError } from '../types/auth';
 
 export default function SettingsPage() {
-  const user = useAuthStore((state) => state.user);
-  const setUser = useAuthStore((state) => state.setUser);
+  const user = useAuthStore((state: any) => state.user);
+  const setUser = useAuthStore((state: any) => state.setUser);
 
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -21,7 +21,7 @@ export default function SettingsPage() {
     setMessage(null);
 
     try {
-      const skillsArray = skills.split(',').map((s) => s.trim()).filter(Boolean);
+      const skillsArray = skills.split(',').map((s: string) => s.trim()).filter(Boolean);
       const res = await userService.updateProfile({
         name,
         bio,
