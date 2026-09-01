@@ -8,6 +8,6 @@ const router = express.Router();
 router.use(requireAuth);
 
 router.get('/global', getGlobalAnalytics);
-router.get('/projects/:projectId', requireProjectRole(['owner', 'admin', 'member', 'viewer']), getProjectAnalytics);
+router.get('/projects/:projectId', requireProjectRole('viewer'), getProjectAnalytics);
 
 export default router;

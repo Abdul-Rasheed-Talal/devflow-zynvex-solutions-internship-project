@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import NotificationBell from '../notifications/NotificationBell';
+import UserProfileModal from '../team/UserProfileModal';
 
 export default function Header() {
   const { user, logout } = useAuthStore();
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   return (
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 shrink-0">
@@ -21,7 +24,7 @@ export default function Header() {
 
         <div className="h-6 w-px bg-gray-200 mx-2"></div>
 
-        <Link to="/app/settings" className="hover:opacity-80 transition-opacity">
+        <button onClick={() => setShowProfileModal(true)} className="hover:opacity-80 transition-opacity focus:outline-none">
           {user?.avatarUrl ? (
             <img src={user.avatarUrl} alt="Profile" className="h-8 w-8 rounded-full object-cover" />
           ) : (
@@ -29,7 +32,7 @@ export default function Header() {
               {user?.name?.charAt(0).toUpperCase()}
             </div>
           )}
-        </Link>
+        </button>
 
         <div className="h-6 w-px bg-gray-200 mx-2"></div>
 
@@ -40,6 +43,8 @@ export default function Header() {
           Logout
         </button>
       </div>
+
+      <UserProfileModal user={showProfileModal ? user : null} onClose={() => setShowProfileModal(false)} />
     </header>
   );
 }
