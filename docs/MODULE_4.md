@@ -57,13 +57,13 @@ As noted during the Module 3 review, the following features were deferred and ar
 - **Frontend Charting**: `recharts` for responsive, accessible, and highly customizable React charts.
 - **AI Integration**: Backend integration with an AI provider (e.g., Google Gemini API) for the Health Analysis feature.
 
-## 5. Task Breakdown
+## 5. Task Breakdown & Status
 
-- **M4-T01**: Specification & Architecture (This document)
-- **M4-T02**: User Profiles & Account Types (Backend `accountType`, Bio, Skills, Registration UI updates for Personal/Company)
-- **M4-T03**: Workspace UI & UX Improvements (Hide team features for Personal accounts, Add team member by Email)
-- **M4-T04**: Global Dashboard & Project Analytics (Recharts integration, aggregation APIs)
-- **M4-T05**: GitHub Integration (OAuth Login, Repo linking, PR fetching, PR badges on tasks)
-- **M4-T06**: AI Project Health Analysis Backend (Prompt generation & Gemini API integration)
-- **M4-T07**: AI Insights Frontend (UI for reports and health scores)
-- **M4-T08**: Final Polish & Deployment Prep (Security audit, loading states)
+- [x] **M4-T01**: Specification & Architecture (Module 4 spec document and technical requirements)
+- [x] **M4-T02**: User Profiles & Account Types (Backend `accountType`, Bio, Skills, Registration flow for Personal/Company accounts)
+- [x] **M4-T03**: Workspace UI & UX Improvements (Personal account 1-team cap, Add team member by Email, Global Workspaces)
+- [x] **M4-T04**: Global Dashboard & Project Analytics (Recharts integration, aggregation APIs, upcoming tasks, live audit feed)
+- [x] **M4-T05**: GitHub Integration (OAuth Login, Repo linking, PR status badges on tasks, commit tracking)
+- [x] **M4-T06**: AI Project Health Analysis Backend (Groq/Gemini API integration, health score heuristic, risk analysis)
+- [x] **M4-T07**: AI Insights Frontend (Interactive health dashboard, actionable recommendations UI, Enterprise project sponsorship)
+- [x] **M4-T08**: Final Polish & Deployment Prep (Enterprise branding, team deletion, auto-synchronization, documentation update)
