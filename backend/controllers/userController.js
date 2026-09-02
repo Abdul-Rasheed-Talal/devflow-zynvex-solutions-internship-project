@@ -77,30 +77,69 @@ export const getTeamMembers = async (req, res, next) => {
     // Find all projects the user is part of (owner or member)
     const projects = await Project.find({
       $or: [{ owner: userId }, { 'members.user': userId }],
-    });
+    }).populate('members.user', 'name email avatarUrl bio skills accountType companyName subscriptionPlan');
 
     if (projects.length === 0) {
       return res.status(200).json({ success: true, data: [] });
     }
 
-    // Collect all unique user IDs from these projects
-    const userIds = new Set();
-    
-    projects.forEach((p) => {
-      userIds.add(p.owner.toString());
-      p.members.forEach((m) => {
-        if (m.user) userIds.add(m.user.toString());
-      });
-    });
+    const teamDirectory = projects.map((project) => {
+      // Determine the current user's role in this project
+      let myRole = 'viewer';
+      if (project.owner.toString() === userId.toString()) {
+        myRole = 'owner';
+      } else {
+        const myMemberObj = project.members.find(m => m.user && m.user._id.toString() === userId.toString());
+        if (myMemberObj) myRole = myMemberObj.role;
+      }
 
-    // Fetch user profiles for these IDs
-    const teamMembers = await User.find({
-      _id: { $in: Array.from(userIds) },
-    }).select('name email avatarUrl bio skills accountType');
+      const hasPrivilegedAccess = myRole === 'owner' || myRole === 'admin';
+
+      // Map members, applying RBAC to sensitive fields
+      const mappedMembers = project.members.map((member) => {
+        const u = member.user;
+        if (!u) return null;
+        
+        // Base public profile
+        const safeProfile = {
+          id: u._id,
+          name: u.name,
+          avatarUrl: u.avatarUrl,
+          bio: u.bio,
+          skills: u.skills,
+          accountType: u.accountType,
+          companyName: u.companyName,
+          projectRole: member.role,
+          addedAt: member.addedAt
+        };
+
+        // Add private fields if privileged or if it's the user themselves
+        if (hasPrivilegedAccess || u._id.toString() === userId.toString()) {
+          safeProfile.email = u.email;
+          safeProfile.subscriptionPlan = u.subscriptionPlan;
+        }
+
+        return safeProfile;
+      }).filter(Boolean);
+
+      // Add owner if not already in members array
+      const ownerInMembers = mappedMembers.some(m => m.id.toString() === project.owner.toString());
+      if (!ownerInMembers) {
+        // We'd need to fetch owner details, but usually they are populated or we can just fetch if missing.
+        // For simplicity, DevFlow always adds owner to members array on create.
+      }
+
+      return {
+        projectId: project._id,
+        projectName: project.name,
+        myRole,
+        members: mappedMembers
+      };
+    });
 
     res.status(200).json({
       success: true,
-      data: teamMembers,
+      data: teamDirectory,
     });
   } catch (error) {
     next(error);

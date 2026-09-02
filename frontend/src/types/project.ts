@@ -26,6 +26,7 @@ export interface CreateProjectInput {
   startDate?: string;
   dueDate?: string;
   githubRepo?: string;
+  teamId?: string;
 }
 
 export interface UpdateProjectInput {
@@ -74,6 +75,8 @@ export interface UserBasic {
   id: string;
   name: string;
   email: string;
+  avatarUrl?: string;
+  accountType: 'personal' | 'company';
   createdAt: string;
   updatedAt: string;
 }

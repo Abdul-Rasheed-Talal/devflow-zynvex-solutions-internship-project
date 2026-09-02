@@ -12,6 +12,7 @@ import NewProjectPage from './pages/projects/NewProjectPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
 import ProjectTasksPage from './pages/tasks/ProjectTasksPage';
 import SettingsPage from './pages/SettingsPage';
+import UpgradePage from './pages/UpgradePage';
 import TeamPage from './pages/team/TeamPage';
 import AnnouncementsPage from './pages/team/AnnouncementsPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="team" element={<TeamPage />} />
             <Route path="announcements" element={<AnnouncementsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="upgrade" element={<UpgradePage />} />
           </Route>
 
           {/* Public Authentication Routes */}

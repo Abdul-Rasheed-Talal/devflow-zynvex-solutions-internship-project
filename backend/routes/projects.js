@@ -9,6 +9,7 @@ import {
   addProjectMember,
   removeProjectMember,
   updateProjectMemberRole,
+  assignTeamToProject,
 } from '../controllers/projectController.js';
 import {
   getProjectTasks,
@@ -72,6 +73,11 @@ router.patch('/:projectId/members/:userId', requireProjectRole('admin'), updateP
 // @desc    Remove a project member
 // @access  Private (admin or higher)
 router.delete('/:projectId/members/:userId', requireProjectRole('admin'), removeProjectMember);
+
+// @route   POST /api/projects/:projectId/teams/:teamId/assign
+// @desc    Assign all members of a Global Team to a Project in bulk
+// @access  Private (admin or higher)
+router.post('/:projectId/teams/:teamId/assign', requireProjectRole('admin'), assignTeamToProject);
 
 // ==========================================
 // Nested Task Routes

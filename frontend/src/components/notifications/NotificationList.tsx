@@ -22,8 +22,9 @@ export default function NotificationList({ onClose }: NotificationListProps) {
   };
 
   const renderMessage = (notif: Notification) => {
-    const actorName = notif.actor.name;
-    const projectName = notif.project.name;
+    const actorName = notif.actor?.name || 'Someone';
+    const projectName = notif.project?.name || 'a project';
+    const teamName = notif.team?.name || 'a team';
     const taskTitle = notif.task?.title || 'a task';
 
     switch (notif.type) {
@@ -48,14 +49,39 @@ export default function NotificationList({ onClose }: NotificationListProps) {
             <span className="font-medium text-gray-800">{taskTitle}</span>.
           </span>
         );
+      case 'team_added':
+        return (
+          <span>
+            <span className="font-semibold text-gray-900">{actorName}</span> added you to the team{' '}
+            <span className="font-medium text-gray-800">{teamName}</span>.
+          </span>
+        );
+      case 'project_added':
+        return (
+          <span>
+            <span className="font-semibold text-gray-900">{actorName}</span> added you as a collaborator to{' '}
+            <span className="font-medium text-gray-800">{projectName}</span>.
+          </span>
+        );
       default:
-        return <span>You have a new notification in {projectName}.</span>;
+        return <span>You have a new update from {actorName}.</span>;
     }
   };
 
   const getTargetUrl = (notif: Notification) => {
-    const taskId = notif.type === 'mention' && notif.comment ? notif.comment.task : notif.referenceId;
-    return `/app/projects/${notif.project._id}/tasks?taskId=${taskId}`;
+    if (notif.type === 'team_added') {
+      return '/app/team';
+    }
+    if (notif.project?._id) {
+      if (notif.type === 'project_added') {
+        return `/app/projects/${notif.project._id}`;
+      }
+      const taskId = notif.type === 'mention' && notif.comment ? notif.comment.task : notif.referenceId;
+      return taskId 
+        ? `/app/projects/${notif.project._id}/tasks?taskId=${taskId}`
+        : `/app/projects/${notif.project._id}`;
+    }
+    return '/app/dashboard';
   };
 
   return (

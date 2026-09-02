@@ -108,3 +108,16 @@ export function useUpdateMemberRole(projectId: string) {
     },
   });
 }
+
+/** Assign an entire Global Team to a project in bulk */
+export function useAssignTeam(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (teamId: string) => projectService.assignTeam(projectId, teamId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: projectKeys.members(projectId) });
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+    },
+  });
+}
+

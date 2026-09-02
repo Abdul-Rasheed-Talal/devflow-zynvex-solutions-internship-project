@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { authService } from '../services/authService';
-import { useAuthStore } from '../stores/authStore';
 import AuthLayoutBackground from '../components/auth/AuthLayoutBackground';
 
 export default function RegisterPage() {
@@ -10,6 +9,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [accountType, setAccountType] = useState<'personal' | 'company'>('personal');
+  const [companyName, setCompanyName] = useState('');
   
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -39,6 +39,11 @@ export default function RegisterPage() {
       return;
     }
 
+    if (accountType === 'company' && !companyName) {
+      setErrorMsg('Company name is required');
+      return;
+    }
+
     if (password.length < 6) {
       setErrorMsg('Password must be at least 6 characters');
       return;
@@ -48,7 +53,13 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      await authService.register({ name, email, password, accountType });
+      await authService.register({ 
+        name, 
+        email, 
+        password, 
+        accountType,
+        companyName: accountType === 'company' ? companyName : undefined 
+      });
       setIsSuccess(true);
     } catch (err: any) {
       setErrorMsg(err.message || 'An error occurred during registration');
@@ -117,6 +128,25 @@ export default function RegisterPage() {
               </label>
             </div>
           </div>
+
+          {accountType === 'company' && (
+            <div>
+              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+                Company Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="companyName"
+                  name="companyName"
+                  type="text"
+                  required
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+          )}
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">

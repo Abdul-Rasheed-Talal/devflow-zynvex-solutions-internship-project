@@ -1,6 +1,7 @@
 import Notification from '../models/Notification.js';
 import Task from '../models/Task.js';
 import Comment from '../models/Comment.js';
+import Team from '../models/Team.js';
 import mongoose from 'mongoose';
 
 /**
@@ -20,6 +21,7 @@ export const getNotifications = async (req, res, next) => {
       .limit(limit)
       .populate('actor', 'name email')
       .populate('project', 'name')
+      .populate('team', 'name')
       .lean();
 
     // Manually fetch contextual data for UI
@@ -31,6 +33,8 @@ export const getNotifications = async (req, res, next) => {
           const task = await Task.findById(comment.task).select('title').lean();
           notif.task = task;
         }
+      } else if (notif.type === 'team_added' || notif.type === 'project_added') {
+        // Team and Project info are already populated
       } else {
         const task = await Task.findById(notif.referenceId).select('title').lean();
         notif.task = task;

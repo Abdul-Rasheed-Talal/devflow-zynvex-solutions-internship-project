@@ -5,6 +5,17 @@ export interface TeamMember extends User {
   skills?: string[];
   avatarUrl?: string;
   accountType: 'personal' | 'company';
+  companyName?: string;
+  subscriptionPlan?: 'basic' | 'pro';
+  projectRole?: string;
+  addedAt?: string;
+}
+
+export interface ProjectTeamDirectory {
+  projectId: string;
+  projectName: string;
+  myRole: string;
+  members: TeamMember[];
 }
 
 export interface Announcement {

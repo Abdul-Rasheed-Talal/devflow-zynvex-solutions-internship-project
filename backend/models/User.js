@@ -30,6 +30,21 @@ const userSchema = new mongoose.Schema(
       enum: ['personal', 'company'],
       default: 'personal',
     },
+    companyName: {
+      type: String,
+      trim: true,
+    },
+    subscriptionPlan: {
+      type: String,
+      enum: ['basic', 'pro'],
+      default: 'basic',
+    },
+    stripeCustomerId: {
+      type: String,
+    },
+    stripeSubscriptionId: {
+      type: String,
+    },
     bio: {
       type: String,
       maxlength: [500, 'Bio must not exceed 500 characters'],
@@ -73,6 +88,7 @@ userSchema.methods.toSafeObject = function () {
     skills: this.skills,
     avatarUrl: this.avatarUrl,
     githubUsername: this.githubUsername,
+    subscriptionPlan: this.subscriptionPlan,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };

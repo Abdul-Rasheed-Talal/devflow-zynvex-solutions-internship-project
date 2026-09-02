@@ -164,17 +164,17 @@ export default function TaskForm({
             .filter((member) => member.role !== 'viewer')
             .filter((member) => {
               // Ensure we don't duplicate the owner if they happen to be in members list
-              const userId = member.user ? member.user.id : (member as any).id;
-              const ownerId = (project.owner as any)._id || project.owner;
-              return userId !== ownerId;
+              const userId = (member.user as any)?._id || member.user?.id || (member as any)?._id || (member as any)?.id;
+              const ownerId = (project.owner as any)?._id || project.owner;
+              return userId && userId.toString() !== ownerId.toString();
             })
             .map((member) => {
-              const userId = member.user ? member.user.id : (member as any).id;
-              const userName = member.user ? member.user.name : (member as any).name;
-              const userEmail = member.user ? member.user.email : (member as any).email;
+              const userId = (member.user as any)?._id || member.user?.id || (member as any)?._id || (member as any)?.id;
+              const userName = member.user?.name || (member as any)?.name || 'Team Member';
+              const userEmail = member.user?.email || (member as any)?.email || '';
               return (
                 <option key={userId} value={userId}>
-                  {userName} ({userEmail})
+                  {userName} {userEmail ? `(${userEmail})` : ''}
                 </option>
               );
             })}

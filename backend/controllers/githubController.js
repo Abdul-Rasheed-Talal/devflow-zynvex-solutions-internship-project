@@ -1,4 +1,54 @@
-import fetch from 'node-fetch'; // or global fetch if Node 18+
+
+
+import User from '../models/User.js';
+
+/**
+ * @desc    Fetch GitHub repositories for the authenticated user
+ * @route   GET /api/github/repos
+ * @access  Private (Premium only)
+ */
+export const getUserRepositories = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select('+githubAccessToken');
+    
+    if (!user.githubAccessToken) {
+      return res.status(400).json({ success: false, message: 'GitHub account not linked' });
+    }
+
+    const response = await fetch('https://api.github.com/user/repos?sort=updated&per_page=100', {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        Authorization: `Bearer ${user.githubAccessToken}`
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return res.status(400).json({ success: false, message: 'GitHub token invalid or expired. Please reconnect.' });
+      }
+      throw new Error('Failed to fetch repositories from GitHub');
+    }
+
+    const repos = await response.json();
+    
+    const formattedRepos = repos.map(repo => ({
+      id: repo.id,
+      name: repo.name,
+      full_name: repo.full_name,
+      description: repo.description,
+      html_url: repo.html_url,
+      private: repo.private,
+      updated_at: repo.updated_at
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedRepos
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * @desc    Fetch GitHub open issues and PRs for a project

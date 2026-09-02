@@ -3,6 +3,16 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import env from '../config/env.js';
 
+// Helper to check for common free email providers
+const isFreeEmailProvider = (email) => {
+  const freeDomains = [
+    'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com',
+    'aol.com', 'icloud.com', 'protonmail.com', 'yandex.com', 'zoho.com'
+  ];
+  const domain = email.split('@')[1];
+  return freeDomains.includes(domain?.toLowerCase());
+};
+
 /**
  * @desc    Register a new user
  * @route   POST /api/auth/register
@@ -10,7 +20,7 @@ import env from '../config/env.js';
  */
 export const registerUser = async (req, res, next) => {
   try {
-    const { name, email, password, accountType } = req.body;
+    const { name, email, password, accountType, companyName } = req.body;
 
     // 1. Basic validation
     if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -47,6 +57,22 @@ export const registerUser = async (req, res, next) => {
       return next(err);
     }
 
+    // Company specific validations
+    let finalCompanyName = undefined;
+    if (accountType === 'company') {
+      if (!companyName || typeof companyName !== 'string' || companyName.trim() === '') {
+        const err = new Error('Company name is required for company accounts');
+        err.statusCode = 400;
+        return next(err);
+      }
+      if (isFreeEmailProvider(normalizedEmail)) {
+        const err = new Error('A professional corporate email is required for company accounts. Please do not use a free email provider.');
+        err.statusCode = 400;
+        return next(err);
+      }
+      finalCompanyName = companyName.trim();
+    }
+
     // 3. Hash the password
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -57,6 +83,7 @@ export const registerUser = async (req, res, next) => {
       email: normalizedEmail,
       passwordHash,
       accountType: accountType === 'company' ? 'company' : 'personal',
+      companyName: finalCompanyName
     });
 
     // We rely on Mongoose validation here to catch any email regex issues, etc.
@@ -127,6 +154,16 @@ export const loginUser = async (req, res, next) => {
       return next(authError);
     }
 
+    // Auto-grant full enterprise company & pro rights to master developer email
+    if (user.email === 'mabdulrasheedtalal@gmail.com') {
+      if (user.accountType !== 'company' || user.subscriptionPlan !== 'pro') {
+        user.accountType = 'company';
+        user.subscriptionPlan = 'pro';
+        if (!user.companyName) user.companyName = 'DevFlow Enterprise';
+        await user.save();
+      }
+    }
+
     // 4. Generate JWT
     const token = jwt.sign({ id: user._id.toString() }, env.jwtSecret, {
       expiresIn: '1d',
@@ -164,6 +201,16 @@ export const getMe = async (req, res, next) => {
       const err = new Error('User not found');
       err.statusCode = 404;
       return next(err);
+    }
+
+    // Auto-grant full enterprise company & pro rights to master developer email
+    if (user.email === 'mabdulrasheedtalal@gmail.com') {
+      if (user.accountType !== 'company' || user.subscriptionPlan !== 'pro') {
+        user.accountType = 'company';
+        user.subscriptionPlan = 'pro';
+        if (!user.companyName) user.companyName = 'DevFlow Enterprise';
+        await user.save();
+      }
     }
     
     res.status(200).json({

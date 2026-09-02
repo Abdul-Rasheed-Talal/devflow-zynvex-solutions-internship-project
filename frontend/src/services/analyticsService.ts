@@ -1,16 +1,31 @@
 import apiClient from '../lib/apiClient';
 
+export interface TaskAnalyticsSummary {
+  _id: string;
+  title: string;
+  status?: string;
+  priority?: string;
+  dueDate?: string;
+  project: { _id: string; name: string };
+  assignee?: { _id: string; name: string; avatarUrl?: string };
+}
+
+export interface ActivitySummary {
+  _id: string;
+  action: string;
+  actor: { _id: string; name: string; avatarUrl?: string };
+  project: { _id: string; name: string };
+  createdAt: string;
+}
+
 export interface GlobalAnalytics {
   activeProjectsCount: number;
   pendingTasksCount: number;
   overdueTasksCount: number;
   statusChartData: { name: string; value: number }[];
-  myUpcomingTasks: {
-    _id: string;
-    title: string;
-    dueDate?: string;
-    project: { _id: string; name: string };
-  }[];
+  myUpcomingTasks: TaskAnalyticsSummary[];
+  allPendingTasks?: TaskAnalyticsSummary[];
+  recentActivities?: ActivitySummary[];
 }
 
 export interface ProjectAnalytics {

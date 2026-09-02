@@ -1,4 +1,3 @@
-import React from 'react';
 import { useProjectAnalytics } from '../../hooks/useAnalyticsQueries';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ApiError } from '../../types/auth';

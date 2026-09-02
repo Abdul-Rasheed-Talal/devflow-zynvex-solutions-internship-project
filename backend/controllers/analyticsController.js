@@ -1,5 +1,6 @@
 import Project from '../models/Project.js';
 import Task from '../models/Task.js';
+import Activity from '../models/Activity.js';
 import mongoose from 'mongoose';
 
 /**
@@ -58,14 +59,33 @@ export const getGlobalAnalytics = async (req, res, next) => {
       { name: 'Done', value: statusDistribution.done },
     ];
 
-    // Upcoming tasks for this specific user
+    // Upcoming tasks for this specific user (assigned directly)
     const myUpcomingTasks = await Task.find({
       project: { $in: projectIds },
       assignee: userId,
       status: { $ne: 'done' },
     })
-      .sort({ dueDate: 1 })
+      .sort({ dueDate: 1, priority: -1, createdAt: -1 })
+      .limit(6)
+      .populate('project', 'name');
+
+    // All pending tasks across accessible projects
+    const allPendingTasks = await Task.find({
+      project: { $in: projectIds },
+      status: { $ne: 'done' },
+    })
+      .sort({ dueDate: 1, priority: -1, createdAt: -1 })
+      .limit(6)
+      .populate('project', 'name')
+      .populate('assignee', 'name avatarUrl');
+
+    // Recent activity feed
+    const recentActivities = await Activity.find({
+      project: { $in: projectIds },
+    })
+      .sort({ createdAt: -1 })
       .limit(5)
+      .populate('actor', 'name avatarUrl')
       .populate('project', 'name');
 
     res.status(200).json({
@@ -76,6 +96,8 @@ export const getGlobalAnalytics = async (req, res, next) => {
         overdueTasksCount,
         statusChartData,
         myUpcomingTasks,
+        allPendingTasks,
+        recentActivities,
       },
     });
   } catch (error) {

@@ -13,6 +13,16 @@ export interface GitHubIssue {
   created_at: string;
 }
 
+export interface GitHubRepo {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string;
+  html_url: string;
+  private: boolean;
+  updated_at: string;
+}
+
 export interface GitHubData {
   repo: string;
   issues: GitHubIssue[];
@@ -21,6 +31,9 @@ export interface GitHubData {
 
 export const githubService = {
   getProjectGitHubData: (projectId: string): Promise<{ success: boolean; data: GitHubData }> => {
-    return apiClient<{ success: boolean; data: GitHubData }>(`/projects/${projectId}/github`);
+    return apiClient<{ success: boolean; data: GitHubData }>(`/github/projects/${projectId}/github`);
+  },
+  getUserRepositories: (): Promise<{ success: boolean; data: GitHubRepo[] }> => {
+    return apiClient<{ success: boolean; data: GitHubRepo[] }>('/github/repos');
   }
 };

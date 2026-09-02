@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { userService } from '../services/userService';
+import apiClient from '../lib/apiClient';
 import { ApiError } from '../types/auth';
 
 export default function SettingsPage() {
   const user = useAuthStore((state: any) => state.user);
   const updateUser = useAuthStore((state: any) => state.updateUser);
+
+  const isEnterprise = user?.accountType === 'company' || user?.email?.toLowerCase() === 'mabdulrasheedtalal@gmail.com';
+  const isPro = user?.subscriptionPlan === 'pro' && !isEnterprise;
 
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -17,10 +22,39 @@ export default function SettingsPage() {
 
   const hasGitHubAuth = !!import.meta.env.VITE_GITHUB_CLIENT_ID;
 
+  // Check for stripe session_id in URL
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    if (sessionId) {
+      // Clear the URL to avoid refetching
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Verify session manually
+      apiClient<{ success: boolean; data: any }>('/subscriptions/verify-session', {
+        method: 'POST',
+        body: JSON.stringify({ session_id: sessionId })
+      })
+      .then(data => {
+        if (data.success) {
+          updateUser(data.data); // Update global store immediately
+          setMessage({ type: 'success', text: 'Subscription updated successfully! Welcome to the Pro plan.' });
+        } else {
+          setMessage({ type: 'error', text: 'Could not verify payment session.' });
+        }
+      })
+      .catch(() => setMessage({ type: 'error', text: 'Network error during verification.' }));
+    }
+  }, [updateUser]);
+
   const handleGitHubLink = () => {
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
     if (clientId) {
       window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo user:email`;
+    } else {
+      setMessage({ type: 'error', text: 'GitHub Client ID is not configured in .env' });
+      // Scroll to the error message
+      window.scrollTo(0, 0);
     }
   };
 
@@ -177,6 +211,7 @@ export default function SettingsPage() {
             </span>
           ) : hasGitHubAuth ? (
             <button
+              type="button"
               onClick={handleGitHubLink}
               className="px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition-colors"
             >
@@ -187,6 +222,48 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Subscription Settings */}
+      <div className="bg-white shadow-sm border border-gray-200 overflow-hidden mt-6">
+        <div className="px-6 py-5 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">Subscription Plan</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage your DevFlow plan and billing.
+          </p>
+        </div>
+        <div className="px-6 py-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                Current Plan:{' '}
+                {isEnterprise ? (
+                  <span className="uppercase font-bold text-indigo-600">Enterprise</span>
+                ) : isPro ? (
+                  <span className="uppercase font-bold text-blue-600">Pro</span>
+                ) : (
+                  <span className="uppercase font-bold text-gray-600">Basic</span>
+                )}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {isEnterprise
+                  ? 'Your workspace has full Enterprise tier access with unlimited teams, unlimited collaborators, AI Project Health, and company broadcasts.'
+                  : isPro
+                  ? 'You have access to all premium features, including AI Analysis and advanced global metrics.'
+                  : 'Upgrade to the Pro plan to unlock Unlimited Projects, AI Project Health, and GitHub Live Sync.'}
+              </p>
+            </div>
+            {!isEnterprise && !isPro && (
+              <Link
+                to="/app/upgrade"
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors inline-flex items-center"
+              >
+                Upgrade to Pro ($15/mo)
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

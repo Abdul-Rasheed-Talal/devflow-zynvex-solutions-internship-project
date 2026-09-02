@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import NotificationBell from '../notifications/NotificationBell';
 import UserProfileModal from '../team/UserProfileModal';
@@ -8,18 +7,37 @@ export default function Header() {
   const { user, logout } = useAuthStore();
   const [showProfileModal, setShowProfileModal] = useState(false);
 
+  const isEnterprise = user?.accountType === 'company' || user?.email?.toLowerCase() === 'mabdulrasheedtalal@gmail.com';
+  const isPro = user?.subscriptionPlan === 'pro' && !isEnterprise;
+
   return (
-    <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 shrink-0">
+    <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 shrink-0">
       <div className="flex items-center">
-        {/* Placeholder for future page title or breadcrumbs */}
-        <h1 className="text-lg font-medium text-gray-900">Workspace</h1>
+        {/* Workspace title reflecting enterprise organization */}
+        <h1 className="text-lg font-semibold text-gray-900 truncate">
+          {isEnterprise ? (user?.companyName || 'Enterprise Workspace') : 'Workspace'}
+        </h1>
       </div>
       
-      <div className="flex items-center gap-4">
-        <div className="flex flex-col items-end">
-          <span className="text-sm font-medium text-gray-900">{user?.name}</span>
-          <span className="text-xs text-gray-500">{user?.email}</span>
-        </div>
+      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+        <button
+          onClick={() => setShowProfileModal(true)}
+          className="hidden sm:flex flex-col items-end text-right hover:opacity-80 transition-opacity focus:outline-none max-w-[180px]"
+        >
+          <div className="flex items-center gap-1.5 max-w-full">
+            <span className="text-sm font-medium text-gray-900 truncate">{user?.name}</span>
+            {isEnterprise ? (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-indigo-100 text-indigo-800 border border-indigo-200 shrink-0">
+                ENTERPRISE
+              </span>
+            ) : isPro ? (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-100 text-blue-700 border border-blue-200 shrink-0">
+                PRO
+              </span>
+            ) : null}
+          </div>
+          <span className="text-xs text-gray-500 truncate max-w-full">{user?.email}</span>
+        </button>
         <NotificationBell />
 
         <div className="h-6 w-px bg-gray-200 mx-2"></div>

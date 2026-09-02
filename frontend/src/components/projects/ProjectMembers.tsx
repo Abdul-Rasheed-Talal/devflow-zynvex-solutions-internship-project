@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useProjectMembers, useAddMember, useRemoveMember, useUpdateMemberRole } from '../../hooks/useProjectQueries';
+import { useProjectMembers, useAddMember, useRemoveMember, useUpdateMemberRole, useAssignTeam } from '../../hooks/useProjectQueries';
+import { useTeamWorkspaces } from '../../hooks/useTeamWorkspaceQueries';
 import { canManageMembers, canManageTargetRole } from '../../lib/permissions';
 import type { ProjectMember, ProjectRole } from '../../types/project';
 import type { ApiError } from '../../types/auth';
@@ -40,8 +41,15 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
   const addMutation = useAddMember(projectId);
   const removeMutation = useRemoveMember(projectId);
   const updateRoleMutation = useUpdateMemberRole(projectId);
+  const assignTeamMutation = useAssignTeam(projectId);
+  const { data: globalTeams } = useTeamWorkspaces();
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showAssignTeamModal, setShowAssignTeamModal] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState('');
+  const [teamAssignSuccess, setTeamAssignSuccess] = useState<string | null>(null);
+  const [teamAssignError, setTeamAssignError] = useState<string | null>(null);
+
   const [emailInput, setEmailInput] = useState('');
   const [addError, setAddError] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
@@ -147,15 +155,39 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
       <div className="bg-white border border-gray-200 rounded">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-sm font-medium text-gray-900">Team members</h2>
-          {hasManagePermission && !showAddForm && (
-            <button
-              onClick={() => { setShowAddForm(true); setAddError(null); }}
-              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Add member
-            </button>
+          {hasManagePermission && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => { setShowAssignTeamModal(true); setTeamAssignError(null); setTeamAssignSuccess(null); }}
+                className="px-3 py-1.5 bg-white text-gray-700 border border-gray-300 text-xs font-medium rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Assign Team
+              </button>
+              {!showAddForm && (
+                <button
+                  type="button"
+                  onClick={() => { setShowAddForm(true); setAddError(null); }}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Add member
+                </button>
+              )}
+            </div>
           )}
         </div>
+
+        {/* Team assign banners */}
+        {teamAssignSuccess && (
+          <div className="mx-6 mt-4 bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded" role="alert">
+            {teamAssignSuccess}
+          </div>
+        )}
+        {teamAssignError && (
+          <div className="mx-6 mt-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded" role="alert">
+            {teamAssignError}
+          </div>
+        )}
 
         {/* Global role error banner */}
         {roleError && (
@@ -328,6 +360,76 @@ export default function ProjectMembers({ projectId, currentUserRole, ownerId }: 
                 className="px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {removeMutation.isPending ? 'Removing...' : 'Remove member'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Team Modal */}
+      {showAssignTeamModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="dialog" aria-modal="true">
+          <div className="bg-white border border-gray-200 rounded shadow-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-lg font-medium text-gray-900">Assign Global Team</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Bulk-assign all members of a global team or workspace to this project.
+            </p>
+
+            {(!globalTeams || globalTeams.length === 0) ? (
+              <div className="mt-4 p-4 bg-gray-50 rounded border text-center text-sm text-gray-500">
+                You do not have any global teams created yet. You can create one in the <strong className="text-gray-900">Team</strong> section.
+              </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label htmlFor="select-team-assign" className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Team
+                  </label>
+                  <select
+                    id="select-team-assign"
+                    value={selectedTeamId}
+                    onChange={(e) => setSelectedTeamId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">-- Choose a team --</option>
+                    {globalTeams.map((team) => (
+                      <option key={team._id} value={team._id}>
+                        {team.name} ({team.members.length + 1} members)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex items-center gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => { setShowAssignTeamModal(false); setSelectedTeamId(''); }}
+                disabled={assignTeamMutation.isPending}
+                className="px-3 py-1.5 bg-white text-gray-700 text-sm font-medium rounded border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!selectedTeamId) return;
+                  setTeamAssignError(null);
+                  setTeamAssignSuccess(null);
+                  try {
+                    await assignTeamMutation.mutateAsync(selectedTeamId);
+                    setTeamAssignSuccess('Team members successfully assigned to the project.');
+                    setShowAssignTeamModal(false);
+                    setSelectedTeamId('');
+                  } catch (err: any) {
+                    setTeamAssignError(err.message || 'Failed to assign team.');
+                  }
+                }}
+                disabled={!selectedTeamId || assignTeamMutation.isPending}
+                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              >
+                {assignTeamMutation.isPending ? 'Assigning...' : 'Assign Team'}
               </button>
             </div>
           </div>

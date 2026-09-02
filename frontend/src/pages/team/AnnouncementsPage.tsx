@@ -39,7 +39,8 @@ export default function AnnouncementsPage() {
         </p>
       </div>
 
-      {user?.accountType === 'company' && (
+      {/* Any authenticated user can post announcements */}
+      {user && (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h2 className="text-sm font-medium text-gray-900 mb-4">Post a new announcement</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -48,7 +49,10 @@ export default function AnnouncementsPage() {
             )}
             <textarea
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                if (error) setError(null);
+              }}
               rows={3}
               placeholder="What do you want to share with the team?"
               className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-3 border"

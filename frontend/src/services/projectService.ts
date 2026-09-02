@@ -74,4 +74,10 @@ export const projectService = {
       body: JSON.stringify(data),
     });
   },
+
+  assignTeam: (projectId: string, teamId: string): Promise<ProjectMemberListResponse> => {
+    return apiClient<ProjectMemberListResponse>(`/projects/${projectId}/teams/${teamId}/assign`, {
+      method: 'POST',
+    });
+  },
 };

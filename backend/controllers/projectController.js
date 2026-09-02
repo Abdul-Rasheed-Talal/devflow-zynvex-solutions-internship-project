@@ -1,9 +1,11 @@
 import mongoose from 'mongoose';
 import Project from '../models/Project.js';
 import User from '../models/User.js';
+import Team from '../models/Team.js';
 import Activity from '../models/Activity.js';
+import Notification from '../models/Notification.js';
 import { logAuditEvent } from '../utils/auditLogger.js';
-import { emitProjectEvent } from '../socket/events.js';
+import { emitProjectEvent, emitUserEvent } from '../socket/events.js';
 
 /**
  * Validate that a string is a valid MongoDB ObjectId.
@@ -68,7 +70,34 @@ export const createProject = async (req, res, next) => {
     // Owner is always the authenticated user — never trust the client
     fields.owner = req.user.id;
 
+    // Enforce 3-project limit for basic users
+    if (req.user.subscriptionPlan !== 'pro') {
+      const projectCount = await Project.countDocuments({ owner: req.user.id });
+      if (projectCount >= 3) {
+        const err = new Error('Free plan limit reached. Upgrade to Pro to create more than 3 projects.');
+        err.statusCode = 403;
+        err.code = 'PROJECT_LIMIT_REACHED';
+        return next(err);
+      }
+    }
+
     const project = new Project(fields);
+
+    // If a global team was selected, pre-populate project members
+    if (req.body.teamId && isValidObjectId(req.body.teamId)) {
+      const team = await Team.findById(req.body.teamId);
+      if (team) {
+        const memberIds = team.members.map(m => (m.user?._id || m.user).toString());
+        if (team.owner.toString() !== req.user.id) {
+          memberIds.push(team.owner.toString());
+        }
+        const uniqueIds = [...new Set(memberIds)].filter(id => id !== req.user.id);
+        const maxMembers = req.user.accountType === 'personal' ? 12 : Infinity;
+        for (const uId of uniqueIds.slice(0, maxMembers)) {
+          project.members.push({ user: uId, role: 'member' });
+        }
+      }
+    }
 
     try {
       await project.save();
@@ -178,10 +207,35 @@ export const deleteProject = async (req, res, next) => {
  */
 export const getProjectMembers = async (req, res, next) => {
   try {
-    // Populate members for response
-    const project = await Project.findById(req.project._id).populate('members.user');
+    const project = await Project.findById(req.project._id);
 
-    const safeMembers = project.members.map((member) => {
+    // Auto-sync any members from teams owned by the project owner
+    try {
+      const ownerTeams = await Team.find({ owner: project.owner });
+      let hasChanges = false;
+      for (const t of ownerTeams) {
+        for (const m of t.members) {
+          const uId = (m.user?._id || m.user).toString();
+          if (uId !== project.owner.toString()) {
+            const exists = project.members.some(pm => (pm.user?._id || pm.user || pm).toString() === uId);
+            if (!exists) {
+              project.members.push({ user: uId, role: 'member' });
+              hasChanges = true;
+            }
+          }
+        }
+      }
+      if (hasChanges) {
+        await project.save();
+      }
+    } catch (syncErr) {
+      console.error('[Project] Auto-sync team members error:', syncErr.message);
+    }
+
+    // Populate members for response
+    const populatedProject = await Project.findById(project._id).populate('members.user');
+
+    const safeMembers = populatedProject.members.map((member) => {
       let safeUser = {};
       if (!member.user) {
         safeUser = member.toSafeObject ? member.toSafeObject() : member;
@@ -214,10 +268,10 @@ export const addProjectMember = async (req, res, next) => {
     const { email, role } = req.body;
     const project = req.project;
 
-    // Security: Only company accounts can add members
+    // Check personal account member limit (12 members max)
     const requestUser = await User.findById(req.user.id);
-    if (!requestUser || requestUser.accountType !== 'company') {
-      const err = new Error('Only Company accounts can add team members.');
+    if (requestUser?.accountType === 'personal' && project.members.length >= 12) {
+      const err = new Error('Personal accounts are limited to 12 members per project. Upgrade to Company for unlimited members.');
       err.statusCode = 403;
       return next(err);
     }
@@ -281,6 +335,20 @@ export const addProjectMember = async (req, res, next) => {
     });
 
     emitProjectEvent(project._id, 'membership.updated', { projectId: project._id, userId });
+
+    // Send notification to newly added project member
+    try {
+      const notif = await Notification.create({
+        user: userId,
+        actor: req.user.id,
+        project: project._id,
+        type: 'project_added',
+        referenceId: project._id,
+      });
+      emitUserEvent(userId.toString(), 'notification.created', { notificationId: notif._id });
+    } catch (notifErr) {
+      console.error('[Project] Failed to create project_added notification:', notifErr.message);
+    }
 
     res.status(200).json({
       success: true,
@@ -404,6 +472,128 @@ export const updateProjectMemberRole = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: project,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Assign all members of a Global Team to a Project in bulk
+ * @route   POST /api/projects/:projectId/teams/:teamId/assign
+ * @access  Private (admin or higher)
+ */
+export const assignTeamToProject = async (req, res, next) => {
+  try {
+    const { projectId, teamId } = req.params;
+    const project = req.project;
+
+    if (!isValidObjectId(teamId)) {
+      const err = new Error('Invalid team ID');
+      err.statusCode = 400;
+      return next(err);
+    }
+
+    const team = await Team.findById(teamId).populate('members.user');
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    // Verify user is owner or member of the team
+    const isTeamOwner = team.owner.toString() === req.user.id;
+    const isTeamMember = team.members.some(m => (m.user?._id || m.user).toString() === req.user.id);
+    if (!isTeamOwner && !isTeamMember) {
+      return res.status(403).json({ message: 'You are not a member of this team' });
+    }
+
+    const requestUser = await User.findById(req.user.id);
+
+    // Collect all candidate user IDs: team owner + all team members
+    const candidateUserIds = [];
+    if (team.owner.toString() !== project.owner.toString()) {
+      candidateUserIds.push(team.owner.toString());
+    }
+    for (const m of team.members) {
+      const uId = (m.user?._id || m.user).toString();
+      if (uId !== project.owner.toString() && !candidateUserIds.includes(uId)) {
+        candidateUserIds.push(uId);
+      }
+    }
+
+    let addedCount = 0;
+    const newlyAddedUserIds = [];
+    for (const uId of candidateUserIds) {
+      const isAlreadyMember = project.members.some(m => {
+        const memberId = (m.user?._id || m.user || m).toString();
+        return memberId === uId;
+      });
+
+      if (!isAlreadyMember) {
+        if (requestUser?.accountType === 'personal' && project.members.length >= 12) {
+          break; // Stop at personal limit
+        }
+        project.members.push({ user: uId, role: 'member' });
+        newlyAddedUserIds.push(uId);
+        addedCount++;
+      }
+    }
+
+    if (addedCount > 0) {
+      await project.save();
+
+      await logAuditEvent({
+        req,
+        projectId: project._id,
+        action: 'team_assigned',
+        metadata: { teamId, teamName: team.name, addedCount }
+      });
+
+      await Activity.create({
+        project: project._id,
+        actor: req.user.id,
+        action: 'team_assigned',
+        metadata: { teamId, teamName: team.name, addedCount }
+      });
+
+      emitProjectEvent(project._id, 'membership.updated', { projectId: project._id });
+
+      // Notify newly added users
+      for (const newUId of newlyAddedUserIds) {
+        try {
+          const notif = await Notification.create({
+            user: newUId,
+            actor: req.user.id,
+            project: project._id,
+            type: 'project_added',
+            referenceId: project._id,
+          });
+          emitUserEvent(newUId.toString(), 'notification.created', { notificationId: notif._id });
+        } catch (notifErr) {
+          // Non-blocking
+        }
+      }
+    }
+
+    // Return populated members
+    const updatedProject = await Project.findById(project._id).populate('members.user');
+    const safeMembers = updatedProject.members.map((member) => {
+      let safeUser = {};
+      if (!member.user) {
+        safeUser = member.toSafeObject ? member.toSafeObject() : member;
+      } else {
+        safeUser = member.user.toSafeObject ? member.user.toSafeObject() : member.user;
+      }
+      return {
+        user: safeUser,
+        role: member.role || 'member',
+        addedAt: member.addedAt
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Assigned team "${team.name}" to project (${addedCount} members added)`,
+      data: safeMembers
     });
   } catch (error) {
     next(error);

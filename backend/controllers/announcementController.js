@@ -30,8 +30,11 @@ export const getAnnouncements = async (req, res, next) => {
  */
 export const createAnnouncement = async (req, res, next) => {
   try {
-    if (req.user.accountType !== 'company') {
-      const err = new Error('Only company accounts can create announcements');
+    const isMaster = req.user.email?.toLowerCase() === 'mabdulrasheedtalal@gmail.com';
+    const isCompanyOrPro = req.user.accountType === 'company' || req.user.subscriptionPlan === 'pro';
+
+    if (!isCompanyOrPro && !isMaster) {
+      const err = new Error('Only company or Pro accounts can create announcements');
       err.statusCode = 403;
       return next(err);
     }
@@ -68,8 +71,11 @@ export const createAnnouncement = async (req, res, next) => {
  */
 export const deleteAnnouncement = async (req, res, next) => {
   try {
-    if (req.user.accountType !== 'company') {
-      const err = new Error('Only company accounts can manage announcements');
+    const isMaster = req.user.email?.toLowerCase() === 'mabdulrasheedtalal@gmail.com';
+    const isCompanyOrPro = req.user.accountType === 'company' || req.user.subscriptionPlan === 'pro';
+
+    if (!isCompanyOrPro && !isMaster) {
+      const err = new Error('Only company or Pro accounts can manage announcements');
       err.statusCode = 403;
       return next(err);
     }

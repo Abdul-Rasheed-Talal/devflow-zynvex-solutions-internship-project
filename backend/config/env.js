@@ -24,6 +24,13 @@ function validateEnv() {
     mongodbUri: process.env.MONGODB_URI,
     jwtSecret: process.env.JWT_SECRET,
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173', // Not used yet — will be required in auth task
+    githubClientId: process.env.GITHUB_CLIENT_ID,
+    githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    stripePriceId: process.env.STRIPE_PRICE_ID,
+    geminiApiKey: process.env.GEMINI_API_KEY,
+    groqApiKey: process.env.GROQ_API_KEY
   };
 }
 

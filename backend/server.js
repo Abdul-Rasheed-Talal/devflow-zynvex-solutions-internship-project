@@ -5,6 +5,7 @@ import { createServer } from 'http';
 import env from './config/env.js';
 import connectDB from './config/db.js';
 import routes from './routes/index.js';
+import { handleStripeWebhook } from './controllers/subscriptionController.js';
 import errorHandler from './middleware/errorHandler.js';
 import { initSocket } from './socket/index.js';
 
@@ -21,6 +22,10 @@ app.use(
     credentials: true,
   })
 );
+
+// Stripe Webhook needs raw body, so we place it before express.json()
+app.post('/api/subscriptions/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+
 app.use(express.json());
 app.use(cookieParser());
 

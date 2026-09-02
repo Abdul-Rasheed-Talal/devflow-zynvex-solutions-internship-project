@@ -7,6 +7,7 @@ import ProjectMembers from '../../components/projects/ProjectMembers';
 import ActivityFeed from '../../components/activity/ActivityFeed';
 import AuditLogFeed from '../../components/projects/AuditLogFeed';
 import ProjectAnalyticsChart from '../../components/analytics/ProjectAnalyticsChart';
+import ProjectHealthAI from '../../components/projects/ProjectHealthAI';
 import ProjectGitHubTab from '../../components/projects/ProjectGitHubTab';
 import { useProjectSocket } from '../../hooks/useProjectSocket';
 import { useAuthStore } from '../../stores/authStore';
@@ -264,17 +265,17 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {user?.accountType === 'company' && (
-        <ProjectMembers
-          projectId={projectId!}
-          currentUserRole={userRole}
-          ownerId={project.owner}
-        />
-      )}
+      <ProjectMembers
+        projectId={projectId!}
+        currentUserRole={userRole}
+        ownerId={project.owner}
+      />
 
       {project.githubRepo && (
         <ProjectGitHubTab projectId={projectId!} repoName={project.githubRepo} />
       )}
+
+      <ProjectHealthAI projectId={projectId!} />
 
       <ProjectAnalyticsChart projectId={projectId!} />
 

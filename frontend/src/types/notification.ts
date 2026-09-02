@@ -3,13 +3,14 @@ import { Project } from './project';
 import { Task } from './task';
 import { Comment } from './comment';
 
-export type NotificationType = 'mention' | 'task_assigned' | 'task_updated';
+export type NotificationType = 'mention' | 'task_assigned' | 'task_updated' | 'team_added' | 'project_added';
 
 export interface Notification {
   _id: string;
   user: string;
   actor: User;
-  project: Pick<Project, '_id' | 'name'>;
+  project?: Pick<Project, '_id' | 'name'> | null;
+  team?: { _id: string; name: string } | null;
   type: NotificationType;
   referenceId: string;
   isRead: boolean;
