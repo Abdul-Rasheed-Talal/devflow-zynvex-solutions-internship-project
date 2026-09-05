@@ -8,6 +8,14 @@ All four official project modules (Module 1 through Module 4) are officially 100
 
 ## Completed
 
+- **On-Demand AI Project Health Diagnostic & Realistic Metrics Engine**
+  - **Manual Trigger Control**: Transformed the AI Health Tracker in [ProjectHealthAI.tsx](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/frontend/src/components/projects/ProjectHealthAI.tsx) from an automatic page-load query into an intentional on-demand diagnostic.
+  - **Inviting Idle State Card**: Added a clean, professional "Run Health Diagnostic" invitation card explaining the evaluation scope (velocity, deadline risks, backlog balance) with an actionable trigger button.
+  - **Realistic Grounded Metrics Calculation**: Updated [aiController.js](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/backend/controllers/aiController.js) to compute authentic ground-truth metrics from database tasks: completion rate (%), total/completed/in-progress/review counts, overdue tasks by priority, unassigned backlog items, and 7-day velocity.
+  - **Natural Context-Aware Copy**: Refined the diagnostic output to speak naturally about the project's actual state, citing exact deliverable names, specific overdue blockers, and calculated delivery forecasts instead of artificial placeholders.
+  - **Visual 4-Column Metrics Grid**: Rendered real statistics (Completion Rate, Overdue Risk, Review Queue, Weekly Velocity), an Identified Risk Factors alert box, and concrete next-step recommendations in the UI.
+  - **Dual AI Provider Integration**: Engineered multi-provider support (Gemini Flash & Groq LLaMA) with a deterministic analytical fallback that guarantees 100% accurate metrics even during API quota exhaustion.
+  - **Re-Analyze Capability**: Added an explicit "Re-analyze" refresh button on completed diagnostics, allowing users to re-evaluate the project whenever tasks or deadlines change without unnecessary automatic AI quota consumption.
 - **SEO, Brand Favicon, Social Sharing Cards & Web Manifest**
   - **Vector & Multi-Resolution Favicons**: Created scalable [frontend/public/favicon.svg](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/frontend/public/favicon.svg), multi-size `favicon.ico` (16, 32, 48, 64), `favicon-32x32.png`, and `favicon-16x16.png` with modern DevFlow developer node/flow branding.
   - **Apple Touch Icon**: Created 180x180 `apple-touch-icon.png` for iOS home screen bookmarks.
