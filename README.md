@@ -137,8 +137,22 @@ DevFlow is an enterprise-grade project management and collaboration platform bui
 
 ---
 
+## 🌐 Production Deployment ($0 Cost on Vercel)
+
+DevFlow is fully optimized for **zero-cost production deployment on Vercel** (both frontend and backend deployed independently):
+
+- **Frontend**: Deployed as a Vite React SPA with automated client-side route rewrites (`frontend/vercel.json`).
+- **Backend**: Deployed as a high-performance Express serverless function with Mongoose connection pooling (`backend/vercel.json` + `backend/api/index.js`).
+- **Database**: Connects seamlessly to MongoDB Atlas M0 free tier.
+- **Enterprise Privileges**: The master developer account (`mabdulrasheedtalal@gmail.com`) automatically inherits full Enterprise capabilities, unlimited teams, broadcast announcements, and AI Health diagnostics across all environments.
+
+👉 **Complete Step-by-Step Instructions**: See [docs/DEPLOYMENT_GUIDE.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/docs/DEPLOYMENT_GUIDE.md).
+
+---
+
 ## 📚 Documentation Index
 
+- [docs/DEPLOYMENT_GUIDE.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/docs/DEPLOYMENT_GUIDE.md) — Step-by-step $0 cost Vercel & MongoDB Atlas production deployment
 - [AGENTS.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/AGENTS.md) — Core AI agent engineering standards & constraints
 - [docs/PROGRESS.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/docs/PROGRESS.md) — Implementation progress, recent changes, and task log
 - [docs/PROJECT_SPEC.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/docs/PROJECT_SPEC.md) — Master product specification

@@ -24,7 +24,7 @@ export const initSocket = (httpServer) => {
   io.use((socket, next) => {
     try {
       const cookies = cookie.parse(socket.request.headers.cookie || '');
-      const token = cookies.devflow_access_token;
+      const token = cookies.devflow_access_token || socket.handshake.auth?.token;
 
       if (!token) {
         return next(new Error('Authentication required'));

@@ -1,52 +1,36 @@
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
+import app from './app.js';
 import env from './config/env.js';
 import connectDB from './config/db.js';
-import routes from './routes/index.js';
-import { handleStripeWebhook } from './controllers/subscriptionController.js';
-import errorHandler from './middleware/errorHandler.js';
 import { initSocket } from './socket/index.js';
 
-const app = express();
 const server = createServer(app);
 
 // --- Socket.IO ---
 initSocket(server);
 
-// --- Middleware ---
-app.use(
-  cors({
-    origin: env.frontendUrl,
-    credentials: true,
-  })
-);
-
-// Stripe Webhook needs raw body, so we place it before express.json()
-app.post('/api/subscriptions/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
-
-app.use(express.json());
-app.use(cookieParser());
-
-// --- Routes ---
-app.use('/api', routes);
-
-// --- Error handling ---
-app.use(errorHandler);
-
-// --- Start server ---
+// --- Start Server ---
 async function start() {
-  await connectDB();
+  try {
+    await connectDB();
 
-  server.listen(env.port, () => {
-    console.log(
-      `DevFlow API server running on port ${env.port} [${env.nodeEnv}]`
-    );
-  });
+    server.listen(env.port, () => {
+      console.log(
+        `DevFlow API server running on port ${env.port} [${env.nodeEnv}]`
+      );
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err.message);
+    process.exit(1);
+  }
 }
 
-start().catch((err) => {
-  console.error('Failed to start server:', err.message);
-  process.exit(1);
+// Graceful shutdown handling
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
 });
+
+start();

@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import env from '../config/env.js';
 
+// Master developer email with permanent enterprise privileges
+const MASTER_EMAIL = 'mabdulrasheedtalal@gmail.com';
+export const isMasterEmail = (email) => email?.toLowerCase() === MASTER_EMAIL;
+
 // Helper to check for common free email providers
 const isFreeEmailProvider = (email) => {
   const freeDomains = [
@@ -12,6 +16,22 @@ const isFreeEmailProvider = (email) => {
   const domain = email.split('@')[1];
   return freeDomains.includes(domain?.toLowerCase());
 };
+
+// Cookie options helper for cross-origin production compatibility
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: env.nodeEnv === 'production',
+  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
+  maxAge: 24 * 60 * 60 * 1000, // 1 day
+  path: '/',
+});
+
+const getClearCookieOptions = () => ({
+  httpOnly: true,
+  secure: env.nodeEnv === 'production',
+  sameSite: env.nodeEnv === 'production' ? 'none' : 'lax',
+  path: '/',
+});
 
 /**
  * @desc    Register a new user
@@ -57,9 +77,18 @@ export const registerUser = async (req, res, next) => {
       return next(err);
     }
 
+    const isMaster = isMasterEmail(normalizedEmail);
+
     // Company specific validations
     let finalCompanyName = undefined;
-    if (accountType === 'company') {
+    let finalAccountType = accountType === 'company' ? 'company' : 'personal';
+    let finalSubscriptionPlan = 'basic';
+
+    if (isMaster) {
+      finalAccountType = 'company';
+      finalSubscriptionPlan = 'pro';
+      finalCompanyName = companyName?.trim() || 'DevFlow Enterprise';
+    } else if (accountType === 'company') {
       if (!companyName || typeof companyName !== 'string' || companyName.trim() === '') {
         const err = new Error('Company name is required for company accounts');
         err.statusCode = 400;
@@ -82,7 +111,8 @@ export const registerUser = async (req, res, next) => {
       name: name.trim(),
       email: normalizedEmail,
       passwordHash,
-      accountType: accountType === 'company' ? 'company' : 'personal',
+      accountType: finalAccountType,
+      subscriptionPlan: finalSubscriptionPlan,
       companyName: finalCompanyName
     });
 
@@ -103,9 +133,17 @@ export const registerUser = async (req, res, next) => {
       return next(saveError);
     }
 
-    // 5. Return safe user information (201 Created)
+    // 5. Generate JWT and issue cookie
+    const token = jwt.sign({ id: user._id.toString() }, env.jwtSecret, {
+      expiresIn: '1d',
+    });
+
+    res.cookie('devflow_access_token', token, getCookieOptions());
+
+    // 6. Return safe user information and token for dual authorization (201 Created)
     res.status(201).json({
       success: true,
+      token,
       data: user.toSafeObject(),
     });
   } catch (error) {
@@ -155,7 +193,7 @@ export const loginUser = async (req, res, next) => {
     }
 
     // Auto-grant full enterprise company & pro rights to master developer email
-    if (user.email === 'mabdulrasheedtalal@gmail.com') {
+    if (isMasterEmail(user.email)) {
       if (user.accountType !== 'company' || user.subscriptionPlan !== 'pro') {
         user.accountType = 'company';
         user.subscriptionPlan = 'pro';
@@ -169,18 +207,13 @@ export const loginUser = async (req, res, next) => {
       expiresIn: '1d',
     });
 
-    // 5. Set JWT as HttpOnly cookie
-    res.cookie('devflow_access_token', token, {
-      httpOnly: true,
-      secure: env.nodeEnv === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-      path: '/'
-    });
+    // 5. Set JWT as HttpOnly cookie (cross-origin friendly for production)
+    res.cookie('devflow_access_token', token, getCookieOptions());
 
-    // 6. Return safe user info (without token in body)
+    // 6. Return safe user info along with token for dual auth
     res.status(200).json({
       success: true,
+      token,
       data: user.toSafeObject(),
     });
   } catch (error) {
@@ -229,12 +262,7 @@ export const getMe = async (req, res, next) => {
  */
 export const logoutUser = (req, res, next) => {
   // Clear the HttpOnly authentication cookie
-  res.clearCookie('devflow_access_token', {
-    httpOnly: true,
-    secure: env.nodeEnv === 'production',
-    sameSite: 'lax',
-    path: '/'
-  });
+  res.clearCookie('devflow_access_token', getClearCookieOptions());
 
   res.status(200).json({
     success: true,
@@ -373,21 +401,26 @@ export const githubCallback = async (req, res, next) => {
       await user.save();
     }
 
+    // Auto-grant full enterprise company & pro rights to master developer email
+    if (isMasterEmail(user.email)) {
+      if (user.accountType !== 'company' || user.subscriptionPlan !== 'pro') {
+        user.accountType = 'company';
+        user.subscriptionPlan = 'pro';
+        if (!user.companyName) user.companyName = 'DevFlow Enterprise';
+        await user.save();
+      }
+    }
+
     // 4. Generate JWT
     const token = jwt.sign({ id: user._id.toString() }, env.jwtSecret, {
       expiresIn: '1d',
     });
 
-    res.cookie('devflow_access_token', token, {
-      httpOnly: true,
-      secure: env.nodeEnv === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000,
-      path: '/'
-    });
+    res.cookie('devflow_access_token', token, getCookieOptions());
 
     res.status(200).json({
       success: true,
+      token,
       data: user.toSafeObject(),
       message: 'Logged in with GitHub'
     });

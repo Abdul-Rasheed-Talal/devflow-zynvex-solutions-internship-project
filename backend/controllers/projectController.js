@@ -276,15 +276,23 @@ export const addProjectMember = async (req, res, next) => {
       return next(err);
     }
 
-    if (!email || typeof email !== 'string') {
+    let user = null;
+    if (email && typeof email === 'string') {
+      const normalizedEmail = email.trim().toLowerCase();
+      user = await User.findOne({ email: normalizedEmail });
+    } else if (req.body.userId) {
+      if (!mongoose.Types.ObjectId.isValid(req.body.userId)) {
+        const err = new Error('Invalid user ID');
+        err.statusCode = 400;
+        return next(err);
+      }
+      user = await User.findById(req.body.userId);
+    } else {
       const err = new Error('Email is required');
       err.statusCode = 400;
       return next(err);
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = await User.findOne({ email: normalizedEmail });
-    
     if (!user) {
       const err = new Error('User not found');
       err.statusCode = 404;

@@ -10,9 +10,11 @@ export const requireAuth = async (req, res, next) => {
   try {
     let token;
 
-    // Check if the token exists in cookies
+    // Check if the token exists in cookies or Authorization header (fallback for cross-origin restrictions)
     if (req.cookies && req.cookies.devflow_access_token) {
       token = req.cookies.devflow_access_token;
+    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
     }
 
     if (!token) {

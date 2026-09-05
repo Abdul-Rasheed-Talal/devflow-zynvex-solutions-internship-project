@@ -12,9 +12,14 @@ let socket: Socket | null = null;
  */
 export const getSocket = (): Socket => {
   if (!socket) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('devflow_token') : null;
+
     socket = io(SOCKET_URL, {
       withCredentials: true,
       autoConnect: false,
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      auth: token ? { token } : undefined,
     });
   }
   return socket;

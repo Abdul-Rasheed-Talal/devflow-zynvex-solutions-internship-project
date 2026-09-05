@@ -25,6 +25,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   initializeAuth: async () => {
     try {
       const response = await authService.getCurrentUser();
+      if (response.token) {
+        localStorage.setItem('devflow_token', response.token);
+      }
       set({
         user: response.data,
         isAuthenticated: true,
@@ -32,6 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
     } catch (error) {
       // 401 or network error -> Unauthenticated
+      localStorage.removeItem('devflow_token');
       set({
         user: null,
         isAuthenticated: false,
@@ -42,6 +46,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (credentials: LoginRequest) => {
     const response = await authService.login(credentials);
+    if (response.token) {
+      localStorage.setItem('devflow_token', response.token);
+    }
     set({
       user: response.data,
       isAuthenticated: true,
@@ -53,6 +60,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       await authService.logout();
     } finally {
       // Always clear local state on logout regardless of API response
+      localStorage.removeItem('devflow_token');
       set({
         user: null,
         isAuthenticated: false,
