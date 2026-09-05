@@ -152,6 +152,7 @@ DevFlow is fully optimized for **zero-cost production deployment on Vercel** (bo
 
 ## 📚 Documentation Index
 
+- [docs/FUTURE_ROADMAP.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/docs/FUTURE_ROADMAP.md) — Future product roadmap, feasibility matrix & AI agent plans
 - [docs/DEPLOYMENT_GUIDE.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/docs/DEPLOYMENT_GUIDE.md) — Step-by-step $0 cost Vercel & MongoDB Atlas production deployment
 - [AGENTS.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/AGENTS.md) — Core AI agent engineering standards & constraints
 - [docs/PROGRESS.md](file:///e:/Zynvex-Solutions%20Internship%20Project%20-%20DevFlow/docs/PROGRESS.md) — Implementation progress, recent changes, and task log
