@@ -108,7 +108,42 @@ This guide details how to deploy DevFlow to **Vercel** with **$0 hosting cost** 
 
 ---
 
-## 5. Master Developer Account & Enterprise Rights
+## 5. Step 4: GitHub OAuth App Configuration (Redirect URL)
+
+If you use GitHub login or repository synchronization, update your OAuth App settings on GitHub to authorize your new production frontend:
+
+1. **Open GitHub Developer Settings**:
+   - Go to [GitHub Settings > Developer settings > OAuth Apps](https://github.com/settings/developers).
+   - Select your existing DevFlow OAuth App (or click **New OAuth App** to keep local dev and production separate).
+
+2. **Update Application URLs**:
+   - **Homepage URL**:
+     ```text
+     https://your-frontend-domain.vercel.app
+     ```
+   - **Authorization callback URL**:
+     ```text
+     https://your-frontend-domain.vercel.app/auth/github/callback
+     ```
+   *(Replace `your-frontend-domain.vercel.app` with your actual Vercel frontend URL).*
+
+3. **Save Changes**:
+   - Click **Update application**.
+
+4. **Synchronize Credentials**:
+   - Copy the **Client ID** and set it as `VITE_GITHUB_CLIENT_ID` in your Vercel Frontend environment variables.
+   - Copy the **Client ID** and **Client Secret** and set them as `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in your Vercel Backend environment variables.
+   - Trigger a redeploy on both if you changed credentials.
+
+> [!TIP]
+> **Pro Tip**: Create two separate GitHub OAuth Apps:
+> - **DevFlow Local**: Callback URL `http://localhost:5173/auth/github/callback`
+> - **DevFlow Production**: Callback URL `https://your-frontend-domain.vercel.app/auth/github/callback`
+> This prevents having to swap URLs whenever switching between local testing and production.
+
+---
+
+## 6. Master Developer Account & Enterprise Rights
 
 The master developer email is permanently configured with universal Enterprise privileges:
 
@@ -129,7 +164,7 @@ The master developer email is permanently configured with universal Enterprise p
 
 ---
 
-## 6. Serverless Architecture & Scalability Highlights
+## 7. Serverless Architecture & Scalability Highlights
 
 ### 1. Mongoose Connection Pooling & Caching
 Serverless functions are stateless and spin down when idle. DevFlow uses global connection caching in `backend/config/db.js` (`global.mongoose = { conn, promise }`). This ensures warm function instances reuse existing connections, preventing connection spikes and avoiding MongoDB Atlas connection limits.
@@ -150,7 +185,7 @@ Vercel Serverless Functions do not support persistent stateful WebSockets. DevFl
 
 ---
 
-## 7. Production Verification Checklist
+## 8. Production Verification Checklist
 
 - [ ] Backend `/api/health` returns `status: "ok"` and `database: "connected"`.
 - [ ] Frontend loads with crisp SaaS aesthetic without console errors.

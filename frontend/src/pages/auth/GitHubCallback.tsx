@@ -24,12 +24,15 @@ export default function GitHubCallback() {
 
     const handleCallback = async () => {
       try {
-        const res = await apiClient<{ success: boolean; data: any }>('/auth/github/callback', {
+        const res = await apiClient<{ success: boolean; data: any; token?: string }>('/auth/github/callback', {
           method: 'POST',
           body: JSON.stringify({ code }),
         });
 
         if (res.success && res.data) {
+          if (res.token) {
+            localStorage.setItem('devflow_token', res.token);
+          }
           updateUser(res.data);
           // If the user already had a token (linking), they are in the app
           // If they didn't, they are logging in. We just go to /app/dashboard
